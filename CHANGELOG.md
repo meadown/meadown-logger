@@ -1,3 +1,13 @@
+## [1.3.1](https://github.com/meadown/meadown-logger/compare/v1.3.0...v1.3.1) (2026-05-29)
+
+### Bug Fixes
+
+* indent log message lines ([d468c69](https://github.com/meadown/meadown-logger/commit/d468c694b6fa897ab358e9768d761ff7892ada6d))
+
+### Documentation
+
+* document multiline log format ([70376aa](https://github.com/meadown/meadown-logger/commit/70376aa9882690b1afac378f85eea650366c9a88))
+
 ## [1.3.0](https://github.com/meadown/meadown-logger/compare/v1.2.1...v1.3.0) (2026-05-29)
 
 ### Features
