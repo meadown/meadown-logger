@@ -28,7 +28,7 @@ function formatLocation(
     caller.line !== null &&
     supportsHyperlinks(streamName)
   )
-    return hyperlink(caller.label, fileUrl(caller.file, caller.line))
+    return hyperlink(caller.label, fileUrl(caller.file))
   return caller.label
 }
 

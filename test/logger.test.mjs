@@ -101,9 +101,9 @@ test("the caller location points back at the calling file", () => {
   assert.match(location, /logger\.test\.mjs:\d+/)
 })
 
-test("the location is a clickable OSC-8 link when hyperlinks are forced", () => {
-  const prev = process.env.FORCE_HYPERLINK
-  process.env.FORCE_HYPERLINK = "1"
+test("the location is a clickable OSC-8 link on a TTY", () => {
+  const prev = process.stdout.isTTY
+  process.stdout.isTTY = true // pretend stdout is an interactive terminal
   try {
     const calls = withEnv("development", () =>
       capture("log", () => customLog("link me")),
@@ -113,7 +113,6 @@ test("the location is a clickable OSC-8 link when hyperlinks are forced", () => 
     assert.ok(location.includes("file://"), "should contain a file:// URL")
     assert.match(location, /logger\.test\.mjs:\d+/)
   } finally {
-    if (prev === undefined) delete process.env.FORCE_HYPERLINK
-    else process.env.FORCE_HYPERLINK = prev
+    process.stdout.isTTY = prev
   }
 })

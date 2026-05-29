@@ -50,20 +50,20 @@ test("hyperlink wraps text in an OSC-8 escape sequence", () => {
   )
 })
 
-test("fileUrl builds a file:// URL with a trailing line, passing through URLs", () => {
-  assert.match(fileUrl("/app/server.ts", 42), /^file:\/\/\/app\/server\.ts:42$/)
-  assert.equal(fileUrl("file:///app/server.ts", 7), "file:///app/server.ts:7")
+test("fileUrl builds a valid file:// URL (no line suffix), passing through URLs", () => {
+  // No `:line` suffix — that breaks file openers like GNOME's gio.
+  assert.equal(fileUrl("/app/server.ts"), "file:///app/server.ts")
+  assert.equal(fileUrl("file:///app/server.ts"), "file:///app/server.ts")
 })
 
-test("supportsHyperlinks honors FORCE_HYPERLINK and TTY", () => {
-  const prev = process.env.FORCE_HYPERLINK
+test("supportsHyperlinks follows the stream's TTY status (no env vars)", () => {
+  const prev = process.stdout.isTTY
   try {
-    process.env.FORCE_HYPERLINK = "1"
+    process.stdout.isTTY = true
     assert.equal(supportsHyperlinks("stdout"), true)
-    process.env.FORCE_HYPERLINK = "0"
+    process.stdout.isTTY = false
     assert.equal(supportsHyperlinks("stdout"), false)
   } finally {
-    if (prev === undefined) delete process.env.FORCE_HYPERLINK
-    else process.env.FORCE_HYPERLINK = prev
+    process.stdout.isTTY = prev
   }
 })
