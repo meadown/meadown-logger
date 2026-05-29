@@ -116,3 +116,31 @@ test("the location is a clickable OSC-8 link on a TTY", () => {
     process.stdout.isTTY = prev
   }
 })
+
+test("the level tag is colored on a TTY, plain when not", () => {
+  // Plain (test runner stdout is not a TTY): tag is exactly the level tag.
+  const plain = withEnv("development", () =>
+    capture("log", () => customLog("x")),
+  )
+  assert.equal(plain[0][0], "[INFO]")
+
+  // On a TTY: only the tag is colored (info cyan, error red); the timestamp
+  // and location stay plain.
+  const prev = process.stdout.isTTY
+  const prevErr = process.stderr.isTTY
+  process.stdout.isTTY = true
+  process.stderr.isTTY = true
+  try {
+    const info = withEnv("development", () => capture("log", () => customLog("x")))
+    assert.equal(info[0][0], "\x1b[36m[INFO]\x1b[0m") // cyan tag
+    assert.equal(info[0][1], new Date(info[0][1]).toISOString()) // plain timestamp
+
+    const err = withEnv("development", () =>
+      capture("error", () => customLog.error("x")),
+    )
+    assert.equal(err[0][0], "\x1b[31m[ERROR]\x1b[0m") // red tag
+  } finally {
+    process.stdout.isTTY = prev
+    process.stderr.isTTY = prevErr
+  }
+})

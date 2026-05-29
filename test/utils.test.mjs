@@ -9,6 +9,7 @@ import assert from "node:assert/strict"
 import getTimeStamp from "../dist/utils/getTimeStamp.js"
 import getCaller from "../dist/utils/getCaller.js"
 import { fileUrl, hyperlink, supportsHyperlinks } from "../dist/utils/link.js"
+import { colorize, supportsColor } from "../dist/utils/color.js"
 
 test("getTimeStamp returns a valid ISO-8601 string", () => {
   const stamp = getTimeStamp()
@@ -63,6 +64,25 @@ test("supportsHyperlinks follows the stream's TTY status (no env vars)", () => {
     assert.equal(supportsHyperlinks("stdout"), true)
     process.stdout.isTTY = false
     assert.equal(supportsHyperlinks("stdout"), false)
+  } finally {
+    process.stdout.isTTY = prev
+  }
+})
+
+test("colorize wraps text in ANSI color codes and resets", () => {
+  assert.equal(colorize("hi", "red"), "\x1b[31mhi\x1b[0m")
+  assert.equal(colorize("hi", "yellow"), "\x1b[33mhi\x1b[0m")
+  assert.equal(colorize("hi", "cyan"), "\x1b[36mhi\x1b[0m")
+  assert.equal(colorize("hi", "dim"), "\x1b[2mhi\x1b[0m")
+})
+
+test("supportsColor follows the stream's TTY status (no env vars)", () => {
+  const prev = process.stdout.isTTY
+  try {
+    process.stdout.isTTY = true
+    assert.equal(supportsColor("stdout"), true)
+    process.stdout.isTTY = false
+    assert.equal(supportsColor("stdout"), false)
   } finally {
     process.stdout.isTTY = prev
   }
