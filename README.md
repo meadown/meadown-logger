@@ -33,11 +33,27 @@ You'll see something like:
 
 ```text
 [INFO] 2026-05-30T10:00:00.000Z (server.ts:42)
-Auth user logged in
+  Auth user logged in
 ```
 
-Each line is tagged by level — `[INFO]`, `[WARN]`, or `[ERROR]` — followed by the
-timestamp and the source location, with your arguments on the next line.
+The first line carries the level tag — `[INFO]`, `[WARN]`, or `[ERROR]` — the
+timestamp, and the source location. Your message sits on the line below, indented so
+it's easy to scan down a busy terminal.
+
+### One thing if you re-export it
+
+A lot of projects like to funnel everything through their own `lib/logger` file.
+That's totally fine here — just pass the logger straight through instead of wrapping
+it in a new function. The file and line are read from the call stack, so an extra
+wrapper makes every log blame _that_ file instead of wherever you actually logged.
+
+```ts
+// GOOD: pass it through — the (file:line) stays honest
+export { default as customLog } from "@meadown/logger"
+
+// BAD: now every log points at this file, not the real caller
+export const customLog = (...args) => log(...args)
+```
 
 ## Color-coded levels
 
@@ -51,7 +67,7 @@ codes in your log files. Nothing to configure.
 
 ## Click to open the source
 
-That `(server.ts:42)` at the end of every log isn't just text — when you're in a
+That `(server.ts:42)` at the end of every log isn't just text — when you are in a
 terminal, it's a **clickable link** that opens the file the log came from. No more
 hunting for where a message came from, and the line number is right there in the
 label.
