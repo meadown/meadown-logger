@@ -8,10 +8,18 @@
 import getCaller, { type Caller } from "./getCaller.js"
 import getTimeStamp from "./getTimeStamp.js"
 import { fileUrl, hyperlink, supportsHyperlinks } from "./link.js"
+import { colorize, supportsColor, type Color } from "./color.js"
 import { isLogAllowed } from "../config.js"
 
 /** The console channels the logger writes to. */
 export type LogChannel = "log" | "error" | "warn"
+
+/** The tag color for each channel: info → cyan, warn → yellow, error → red. */
+const TAG_COLOR: Record<LogChannel, Color> = {
+  log: "cyan",
+  warn: "yellow",
+  error: "red",
+}
 
 /**
  * Renders a caller as a `(file:line)` location. When the terminal supports
@@ -48,6 +56,12 @@ export default function createLog(
     if (!isLogAllowed()) return
     const caller = getCaller()
     const location = formatLocation(caller, streamName)
-    console[channel](tag, getTimeStamp(), `(${location})`, `\n`, ...args, `\n`)
+
+    // Color only the level tag, and only on a real terminal.
+    const tagOut = supportsColor(streamName)
+      ? colorize(tag, TAG_COLOR[channel])
+      : tag
+
+    console[channel](tagOut, getTimeStamp(), `(${location})`, `\n`, ...args, `\n`)
   }
 }
