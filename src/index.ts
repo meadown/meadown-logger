@@ -46,4 +46,5 @@ const customLog: LogFN = Object.assign(createLog("log", "[INFO]"), {
   warn: createLog("warn", "[WARN]"),
 })
 
+export { customLog }
 export default customLog
