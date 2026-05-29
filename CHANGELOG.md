@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/meadown/meadown-logger/compare/v1.0.0...v1.0.1) (2026-05-29)
+
+### Bug Fixes
+
+* disable npm provenance for private release ([1e54827](https://github.com/meadown/meadown-logger/commit/1e54827b58dbedc9f64d43c2c02c0df71bd03228))
+
 ## 1.0.0 (2026-05-29)
 
 ### Features
