@@ -5,9 +5,9 @@ remember _which file_ a message came from — and worse, forgetting to pull thos
 out before shipping. So I made this.
 
 It's basically `console.log` with the rough edges sanded off: every message gets a
-level tag, a timestamp, and a **clickable link** to the exact file and line it came
-from. And it stays quiet in production, so you can leave your logs where they are and
-not worry about them.
+level tag, a timestamp, and the file and line it came from — as a **clickable link**
+you can open straight from your terminal. And it stays quiet in production, so you
+can leave your logs where they are and not worry about them.
 
 No dependencies. No config. Import it and you're done.
 
@@ -39,21 +39,17 @@ Auth user logged in
 Each line is tagged by level — `[INFO]`, `[WARN]`, or `[ERROR]` — followed by the
 timestamp and the source location, with your arguments on the next line.
 
-## Click to jump to the source
+## Click to open the source
 
-That `(server.ts:42)` at the end of every log isn't just text — in terminals that
-support it, it's a **clickable link** that opens the exact line that wrote the log.
-No more hunting for where a message came from.
+That `(server.ts:42)` at the end of every log isn't just text — when you're in a
+terminal, it's a **clickable link** that opens the file the log came from. No more
+hunting for where a message came from, and the line number is right there in the
+label.
 
-It works out of the box in editors and terminals like VS Code, iTerm2, WezTerm,
-Kitty, and Windows Terminal. Anywhere else, it quietly falls back to plain
-`(server.ts:42)` text — nothing to configure, never any garbled output.
-
-If your terminal supports links but isn't auto-detected, you can force them on:
-
-```bash
-FORCE_HYPERLINK=1 node app.js
-```
+There's nothing to configure. Links show up automatically when output goes to a
+terminal, and when it's piped to a file or another program they quietly drop to
+plain `(server.ts:42)` text — so your log files never get cluttered with escape
+codes.
 
 ## What about production?
 
