@@ -5,9 +5,9 @@ remember _which file_ a message came from — and worse, forgetting to pull thos
 out before shipping. So I made this.
 
 It's basically `console.log` with the rough edges sanded off: every message gets a
-level tag, a timestamp, and the file and line it came from — as a **clickable link**
-you can open straight from your terminal. And it stays quiet in production, so you
-can leave your logs where they are and not worry about them.
+**color-coded** level tag, a timestamp, and the file and line it came from — as a
+**clickable link** you can open straight from your terminal. And it stays quiet in
+production, so you can leave your logs where they are and not worry about them.
 
 No dependencies. No config. Import it and you're done.
 
@@ -38,6 +38,16 @@ Auth user logged in
 
 Each line is tagged by level — `[INFO]`, `[WARN]`, or `[ERROR]` — followed by the
 timestamp and the source location, with your arguments on the next line.
+
+## Color-coded levels
+
+The level tag is colored so you can spot what matters at a glance — `[INFO]` in
+cyan, `[WARN]` in yellow, `[ERROR]` in red. The timestamp and location stay plain so
+the color draws your eye straight to the level.
+
+Colors appear automatically when you're in a terminal. When output is piped to a
+file or another program, the tag prints as plain `[INFO]` text — no stray color
+codes in your log files. Nothing to configure.
 
 ## Click to open the source
 
