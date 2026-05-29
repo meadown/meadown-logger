@@ -62,6 +62,8 @@ export default function createLog(
       ? colorize(tag, TAG_COLOR[channel])
       : tag
 
-    console[channel](tagOut, getTimeStamp(), `(${location})`, `\n`, ...args, `\n`)
+    // `\n ` + console's own separator space => the message is indented 2 spaces
+    // on its own line below the metadata.
+    console[channel](tagOut, getTimeStamp(), `(${location})`, `\n `, ...args, `\n`)
   }
 }
