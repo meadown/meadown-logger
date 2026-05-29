@@ -1,3 +1,13 @@
+## [1.2.0](https://github.com/meadown/meadown-logger/compare/v1.1.0...v1.2.0) (2026-05-29)
+
+### Features
+
+* add clickable caller links ([f91c409](https://github.com/meadown/meadown-logger/commit/f91c409cc7fe05155134b5b6ea7c0e25d6a09caa))
+
+### Documentation
+
+* document clickable source links ([58eda28](https://github.com/meadown/meadown-logger/commit/58eda28e49c72ab7d226457ba6817daca87f13f3))
+
 ## [1.1.0](https://github.com/meadown/meadown-logger/compare/v1.0.1...v1.1.0) (2026-05-29)
 
 ### Features
