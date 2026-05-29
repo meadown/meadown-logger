@@ -11,22 +11,17 @@ import getCaller from "../dist/utils/getCaller.js"
 import { fileUrl, hyperlink, supportsHyperlinks } from "../dist/utils/link.js"
 import { colorize, supportsColor } from "../dist/utils/color.js"
 
-test("getTimeStamp returns a valid ISO-8601 string", () => {
-  const stamp = getTimeStamp()
+test("getTimeStamp returns local time with AM/PM and timezone", () => {
+  const stamp = getTimeStamp(new Date("2026-05-30T10:00:00.000Z"))
   assert.equal(typeof stamp, "string")
-  // Parses back to a real date, and round-trips to the same ISO string.
-  assert.equal(new Date(stamp).toISOString(), stamp)
+  assert.match(stamp, /\b(?:AM|PM)\b/)
+  assert.match(stamp, /\b(?:GMT|UTC|[A-Z]{2,5})/)
+  assert.doesNotMatch(stamp, /^\d{4}-\d{2}-\d{2}T/)
 })
 
-test("getTimeStamp reflects the current time", () => {
-  const before = Date.now()
-  const stamp = getTimeStamp()
-  const after = Date.now()
-  const t = new Date(stamp).getTime()
-  assert.ok(
-    t >= before && t <= after,
-    `${stamp} not within [${before}, ${after}]`,
-  )
+test("getTimeStamp accepts a specific Date for deterministic formatting", () => {
+  const date = new Date("2026-05-30T10:00:00.000Z")
+  assert.equal(getTimeStamp(date), getTimeStamp(date))
 })
 
 test("getCaller returns a structured caller", () => {

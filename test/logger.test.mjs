@@ -56,12 +56,14 @@ test("customLog.warn writes to console.warn with a [WARN] tag", () => {
   assert.ok(calls[0].includes("deprecated call"))
 })
 
-test("every line includes an ISO timestamp argument", () => {
+test("every line includes a local AM/PM timestamp argument", () => {
   const calls = withEnv("development", () =>
     capture("log", () => customLog("hello")),
   )
   const stamp = calls[0][1]
-  assert.equal(new Date(stamp).toISOString(), stamp)
+  assert.match(stamp, /\b(?:AM|PM)\b/)
+  assert.match(stamp, /\b(?:GMT|UTC|[A-Z]{2,5})/)
+  assert.doesNotMatch(stamp, /^\d{4}-\d{2}-\d{2}T/)
 })
 
 test("nothing is logged in production", () => {
@@ -133,7 +135,9 @@ test("the level tag is colored on a TTY, plain when not", () => {
   try {
     const info = withEnv("development", () => capture("log", () => customLog("x")))
     assert.equal(info[0][0], "\x1b[36m[INFO]\x1b[0m") // cyan tag
-    assert.equal(info[0][1], new Date(info[0][1]).toISOString()) // plain timestamp
+    assert.match(info[0][1], /\b(?:AM|PM)\b/) // plain timestamp
+    assert.ok(info[0][2].startsWith("\x1b[90m"), "location should be gray") // gray location
+    assert.ok(info[0][3].includes("\x1b[36m└──"), "connector should match tag color")
 
     const err = withEnv("development", () =>
       capture("error", () => customLog.error("x")),
