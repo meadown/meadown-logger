@@ -1,3 +1,13 @@
+## [1.3.0](https://github.com/meadown/meadown-logger/compare/v1.2.1...v1.3.0) (2026-05-29)
+
+### Features
+
+* color level tags on terminals ([41b34b1](https://github.com/meadown/meadown-logger/commit/41b34b14156105ea7c4c708b9e12a6dd58e33053))
+
+### Documentation
+
+* mention color-coded level tags ([2706a34](https://github.com/meadown/meadown-logger/commit/2706a343b36802055cb9f3748ec6c1174d8d96f6))
+
 ## [1.2.1](https://github.com/meadown/meadown-logger/compare/v1.2.0...v1.2.1) (2026-05-29)
 
 ### Bug Fixes
