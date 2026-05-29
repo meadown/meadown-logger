@@ -1,26 +1,52 @@
 {
   "name": "@meadown/logger",
   "version": "0.0.0",
+  "description": "A tiny, zero-dependency logger for Node.js and TypeScript that tags each line, timestamps it, shows the source file and line, and goes quiet in production.",
+  "keywords": [
+    "logger",
+    "logging",
+    "log",
+    "console",
+    "typescript",
+    "nodejs",
+    "zero-dependency",
+    "debug"
+  ],
+  "homepage": "https://github.com/meadown/meadown-logger#readme",
+  "bugs": {
+    "url": "https://github.com/meadown/meadown-logger/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meadown/meadown-logger.git"
+  },
+  "license": "MIT",
+  "author": "Dewan Mobashirul",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "default": "./dist/index.js"
     }
   },
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "build": "tsc",
+    "test": "tsc && node --test \"test/**/*.test.mjs\"",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm run lint && pnpm test && pnpm run build",
     "prepare": "husky",
     "release": "semantic-release"
   },
