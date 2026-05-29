@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/meadown/meadown-logger/compare/v1.0.1...v1.1.0) (2026-05-29)
+
+### Features
+
+* add commonjs build output ([017bdc1](https://github.com/meadown/meadown-logger/commit/017bdc11dad08e805b8bc336b048837b3254f1a5))
+
 ## [1.0.1](https://github.com/meadown/meadown-logger/compare/v1.0.0...v1.0.1) (2026-05-29)
 
 ### Bug Fixes
