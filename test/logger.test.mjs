@@ -100,3 +100,20 @@ test("the caller location points back at the calling file", () => {
   const location = calls[0][2]
   assert.match(location, /logger\.test\.mjs:\d+/)
 })
+
+test("the location is a clickable OSC-8 link when hyperlinks are forced", () => {
+  const prev = process.env.FORCE_HYPERLINK
+  process.env.FORCE_HYPERLINK = "1"
+  try {
+    const calls = withEnv("development", () =>
+      capture("log", () => customLog("link me")),
+    )
+    const location = calls[0][2]
+    assert.ok(location.includes("\x1b]8;;"), "should contain an OSC-8 sequence")
+    assert.ok(location.includes("file://"), "should contain a file:// URL")
+    assert.match(location, /logger\.test\.mjs:\d+/)
+  } finally {
+    if (prev === undefined) delete process.env.FORCE_HYPERLINK
+    else process.env.FORCE_HYPERLINK = prev
+  }
+})
