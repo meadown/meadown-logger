@@ -32,13 +32,14 @@ customLog.error("Something went wrong")
 You'll see something like:
 
 ```text
-[INFO] 2026-05-30T10:00:00.000Z (server.ts:42)
-  Auth user logged in
+[INFO] 2026-05-30 04:00:00 PM GMT+6 (server.ts:42)
+└── Auth user logged in
 ```
 
 The first line carries the level tag — `[INFO]`, `[WARN]`, or `[ERROR]` — the
-timestamp, and the source location. Your message sits on the line below, indented so
-it's easy to scan down a busy terminal.
+local timestamp with AM/PM and timezone, and the source location. Your message hangs
+off a `└──` branch on the line below (colored to match the level), so it's easy to
+scan down a busy terminal.
 
 ### One thing if you re-export it
 
@@ -58,8 +59,8 @@ export const customLog = (...args) => log(...args)
 ## Color-coded levels
 
 The level tag is colored so you can spot what matters at a glance — `[INFO]` in
-cyan, `[WARN]` in yellow, `[ERROR]` in red. The timestamp and location stay plain so
-the color draws your eye straight to the level.
+cyan, `[WARN]` in yellow, `[ERROR]` in red. The `(file:line)` location is dimmed to
+light gray so it stays out of the way, and the timestamp is left plain.
 
 Colors appear automatically when you're in a terminal. When output is piped to a
 file or another program, the tag prints as plain `[INFO]` text — no stray color
