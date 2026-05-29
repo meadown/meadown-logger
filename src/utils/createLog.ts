@@ -23,9 +23,10 @@ const TAG_COLOR: Record<LogChannel, Color> = {
 
 /**
  * Renders a caller as a `(file:line)` location. When the terminal supports
- * OSC-8 hyperlinks, the location is a clickable link to the exact source line;
- * otherwise it's plain text. Pure (no stack access), so it can be called from a
- * helper without disturbing {@link getCaller}'s frame depth.
+ * OSC-8 hyperlinks, the location is a clickable link to the source file while
+ * the line stays visible in the label; otherwise it's plain text. Pure (no
+ * stack access), so it can be called from a helper without disturbing
+ * {@link getCaller}'s frame depth.
  */
 function formatLocation(
   caller: Caller,
@@ -57,13 +58,16 @@ export default function createLog(
     const caller = getCaller()
     const location = formatLocation(caller, streamName)
 
-    // Color only the level tag, and only on a real terminal.
-    const tagOut = supportsColor(streamName)
-      ? colorize(tag, TAG_COLOR[channel])
-      : tag
+    // On a real terminal: color the level tag and the `└──` connector (same
+    // color), and dim the location to gray. The timestamp stays plain.
+    const useColor = supportsColor(streamName)
+    const color = TAG_COLOR[channel]
+    const tagOut = useColor ? colorize(tag, color) : tag
+    const locOut = useColor ? colorize(`(${location})`, "gray") : `(${location})`
+    const connector = useColor ? colorize("└──", color) : "└──"
 
-    // `\n ` + console's own separator space => the message is indented 2 spaces
-    // on its own line below the metadata.
-    console[channel](tagOut, getTimeStamp(), `(${location})`, `\n `, ...args, `\n`)
+    // `\n` + connector puts the message on its own line under a tree branch;
+    // console's separator space sits between the connector and the message.
+    console[channel](tagOut, getTimeStamp(), locOut, `\n${connector}`, ...args, `\n`)
   }
 }

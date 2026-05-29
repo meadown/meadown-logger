@@ -10,6 +10,7 @@ const CODES = {
   red: 31,
   yellow: 33,
   cyan: 36,
+  gray: 90, // bright black — renders as light gray
   dim: 2,
 } as const
 
