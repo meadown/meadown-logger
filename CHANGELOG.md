@@ -1,3 +1,13 @@
+## [1.2.1](https://github.com/meadown/meadown-logger/compare/v1.2.0...v1.2.1) (2026-05-29)
+
+### Bug Fixes
+
+* emit valid file hyperlinks ([e3ffe89](https://github.com/meadown/meadown-logger/commit/e3ffe89d877a57dff0f65ebf1dd3469e6f46f1d7))
+
+### Documentation
+
+* clarify source link behavior ([69cb61f](https://github.com/meadown/meadown-logger/commit/69cb61f1e3e178084abc8c70b2be01c5ed0ecb1b))
+
 ## [1.2.0](https://github.com/meadown/meadown-logger/compare/v1.1.0...v1.2.0) (2026-05-29)
 
 ### Features
