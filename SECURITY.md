@@ -21,6 +21,14 @@ Only the latest published `@meadown/logger` release receives security fixes.
 
 - **Zero runtime dependencies.** Installing the package pulls in no transitive
   packages, so there is no third-party supply-chain surface to inherit.
+- **Build script never reaches a consumer's machine.** There is a small script,
+  `scripts/write-cjs-pkg.mjs`, that runs on the maintainer's machine as part of
+  `pnpm build`. Its only job is to drop a `{ "type": "commonjs" }` marker into
+  `dist/cjs/` so Node loads the CommonJS build correctly. It never goes further
+  than that — `scripts/` is listed in `.npmignore`, so npm removes it before
+  creating the tarball. By the time the package hits the registry, the script is
+  already gone. What does ship is the two-field JSON file it produced, which
+  contains no code and executes nothing.
 - **No I/O or dynamic execution.** It does not read or write files, open network
   connections, spawn processes, or use `eval`/`Function`. It only writes to the
   console and reads `process.env.NODE_ENV` (to stay quiet in production). (The
