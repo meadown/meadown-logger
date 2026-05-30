@@ -2,7 +2,7 @@
 
 ---
 
-## Problem
+## The problem
 
 Every project I started, I wrote the same function.
 
@@ -14,204 +14,233 @@ function customLog(...args) {
 }
 ```
 
-Copy. Paste. Rename. Repeat. Every single project.
+Copy. Paste. Rename. Every single project.
 
-And it never worked the way I wanted. I'd ship code and realise my logs were
-still running in production — because I forgot to wrap them, or I used
-`console.log` directly by accident, or I added a new file and didn't import my
-helper. I'd grep through the codebase before every release looking for stray
-`console.log` calls. It was embarrassing and it was manual and it was exactly
-the kind of problem software should solve.
+And it never really worked. I'd ship and realise my logs were still running in
+production — because I forgot to wrap something, or used `console.log` directly
+out of habit, or added a new file and didn't import my helper. Before every
+release I'd grep the codebase for stray logs. It was embarrassing. It was manual.
+It was exactly the kind of problem software is supposed to solve.
 
-The other thing that drove me crazy: I'd be debugging late at night, terminal
-full of logs, and I'd see something wrong — but I had no idea _where_ it came
-from. Which file? Which line? I'd scan every log call in the codebase, hunting
-the one that produced that output. Ten minutes wasted every time.
+The other thing that drove me crazy: debugging late at night, terminal full of
+output, something clearly wrong — but no idea which file it came from. Which
+line? I'd scan every log call in the project hunting the one that produced it.
+Ten minutes gone. Every time.
 
-**The problems:**
-
-- Writing the same custom log wrapper in every project.
-- Forgetting to strip logs before production.
-- No idea which file a log message came from.
+Three problems. Same root cause. No good solution.
 
 ---
 
-## Research
+## What I looked at first
 
-I looked at what existed.
+I didn't want to build something that already existed, so I looked.
 
-`winston` — powerful, but heavyweight. Config files, transports, log levels to
-tune. I didn't need a logging infrastructure. I needed a smarter `console.log`.
+**winston** — powerful, but not what I needed. Config files, transports, log
+levels to configure. I didn't need logging infrastructure. I needed a smarter
+`console.log`.
 
-`pino` — fast, great for production. Structured JSON output. But that's the
+**pino** — fast, great for production systems. Structured JSON output. The
 opposite of what I wanted for development. JSON logs are unreadable when you're
-just trying to debug.
+just trying to figure out what your code is doing.
 
-`debug` — namespaced, env-var controlled. Closer, but still no automatic
-production silencing, no source location, no colors.
+**debug** — closer. Namespaced, env-var controlled. But no automatic production
+silence, no source location, no colors.
 
-`consola` — pretty output, nice. But still needed config. Still didn't tell
-me where the log came from.
+**consola** — pretty output. Still needed config. Still didn't tell me where a
+log came from.
 
-None of them solved my actual problem: I want to log freely during development,
-and I want it to just work in production without me thinking about it. And I
-want to know, always, exactly where that log came from.
+None of them solved the thing I actually cared about: log freely in development,
+forget about it in production, and always know exactly where the log came from.
 
-The source location thing kept coming back to me. Browser devtools show you
-the file and line next to every `console.log`. Your terminal doesn't. That's
-a real gap, and nobody was filling it simply.
+That last part kept nagging at me. Browser devtools show you the file and line
+next to every `console.log`. Your terminal doesn't. That gap is real, and nobody
+was filling it simply.
 
 ---
 
-## Design
+## How I designed it
 
-I knew what I wanted:
+I started with four things I wasn't willing to compromise on:
 
-1. **One import.** Not a factory, not a config file. `import logger from` and
-   go.
-2. **Automatic production silence.** Read `NODE_ENV`. If it's `production`,
-   do nothing. I never want to think about this again.
-3. **Always know where the log came from.** Show the file and line, every time,
-   automatically. Make it clickable so I can jump there instantly.
-4. **Zero dependencies.** I was tired of packages that dragged in fifty other
-   packages. This should be pure Node.
+1. **One import.** Not a factory, not a config file. `import logger from` and go.
+2. **Automatic production silence.** Read `NODE_ENV`. If it's `production`, do nothing. I never want to think about this again.
+3. **Always show where the log came from.** File and line, every time, automatically.
+4. **Zero dependencies.** I was tired of packages that pulled in fifty others.
 
-The hardest design question was the source location. Reading the call stack is
-fragile — you have to hit the right frame depth, and every wrapper function
-adds a frame and breaks it. I spent time getting this right: the stack is always
-read in the user-facing function, never inside a shared helper. That constraint
-shaped the whole internal architecture.
+The hardest part was the source location. Reading the call stack is fragile —
+every extra function frame shifts the depth and points at the wrong file. Getting
+it right meant a constraint that shaped the whole architecture: the stack is
+always read in the user-facing function and passed down. Never resolved inside a
+helper. That one rule is why the location is correct no matter how you call it —
+regular function, arrow function, async, class method, callback.
 
-The `tap` idea came later. I kept writing:
+The `tap` idea came later, from a specific frustration:
 
 ```ts
 const user = await getUser(id)
-console.log("user:", user) // log it
-return user // then return it
+console.log("user:", user)
+return user
 ```
 
-Two lines every time. I wanted one. `tap` came from that frustration — log it
-and give it back, inline, without restructuring the code. When I realised I
-could `tap` a `fetch` promise and get timing, status, size, and the actual body
-back automatically — that became the feature I was most excited about.
+Two lines every time. I wanted one. `tap` came from that — log it, give it back,
+don't restructure anything. And when I realised I could `tap` a `fetch` promise
+and automatically get timing, HTTP status, response size, and the actual body
+back — that became the feature I was most excited about.
 
 ---
 
-## Build
+## Building it
 
-I started with the simplest thing: a function that reads `NODE_ENV`, logs with
-a timestamp, and parses the call stack for the source location.
+I started simple: a function that reads `NODE_ENV`, logs with a timestamp, and
+parses the call stack for the source location.
 
-Then I added the visual structure — the color-coded level tags, the tree layout,
-the clickable OSC-8 link so the location is actually navigable. Each piece
-came from a specific frustration with plain `console.log`.
+Then came the visual structure — color-coded level tags, the tree layout, the
+clickable OSC-8 link so you can actually navigate to the file. Each piece came
+from a specific frustration with plain `console.log`.
 
-The internal architecture is feature-based:
+The internal structure is feature-based — each concern in its own folder:
 
 ```
 src/
-  core/      — the log pipeline
-  tap/       — logger.tap + the async timing logic
-  colors/    — ANSI color palette
-  decorations/ — clickable OSC-8 source links
-  caller/    — stack → (file:line)
-  time/      — short local timestamp
-  terminal/  — single isTTY check
-  constants.ts — all layout values in one place
+  core/          the log pipeline
+  tap/           logger.tap + async timing logic
+  colors/        ANSI color palette
+  decorations/   clickable source links
+  caller/        stack → file:line
+  time/          short local timestamp
+  terminal/      single isTTY check
+  constants.ts   all layout values in one place
 ```
 
-Zero runtime dependencies. Everything is Node built-ins: `node:util` for
-formatting, `node:perf_hooks` for timing, `node:url` for building safe file
-URLs.
+Zero runtime dependencies. Everything is Node built-ins — `node:util` for
+formatting, `node:perf_hooks` for timing, `node:url` for safe file URLs.
 
-The `tap` async path was the trickiest build. A fire-and-forget background
-logger that clones the response body so the caller's `Response` stays
-consumable — all without adding a frame to the call stack that would break
-the source location. Getting that right took several iterations.
+The `tap` async path was the trickiest part. It had to be fire-and-forget
+(return the original promise immediately, never block the caller), clone the
+response body so the original stays readable, and still log everything once the
+promise settles. All without adding a stack frame that would break the source
+location. It took a few iterations to get right.
 
 ---
 
-## Ship
+## What shipped
 
-The package ships with:
-
-- **ESM and CJS** — works with `import` and `require`, no consumer config.
+- **ESM and CJS** — works with `import` and `require` without any consumer config.
 - **Full TypeScript types** — no `@types` package needed.
-- **`SECURITY.md`** — because I wanted the package to be something I could
-  point a security reviewer at without embarrassment.
-- **A real test suite** — 29 tests covering every path including async tap,
-  production silence, circular objects, and source location accuracy.
+- **29 tests** — covering the async tap path, production silence, circular objects, and source location accuracy across every call context.
+- **SECURITY.md** — I wanted a package I could point a security reviewer at without embarrassment.
 
-It's 17 kB on npm. No install side effects. Nothing writes to disk. Nothing
-opens a network connection (the package itself — not your app).
+It's 17 kB on npm. Nothing writes to disk. Nothing opens a network connection.
+No install side effects.
 
 ---
 
-## Feedback
+## What changed along the way
 
-The questions that shaped the final design:
+Building anything means being wrong about things first. Here's what got cut or
+corrected:
 
-- _"What if I re-export it through my own lib/logger?"_ — discovered that any
-  wrapper function breaks the source location. Documented the right way to do
-  it. Became a prominent README note.
-- _"Does `tap` on a promise block my code?"_ — fire-and-forget was the right
-  answer. Return the original promise immediately, log in the background.
-- _"What about production?"_ — it was framed as "shuts up in production" early
-  on. That framing was wrong. Reframed as "development-focused by default."
-  A production-grade logger is a different product.
-- _"Does size show even when the server compresses the response?"_ — `Content-Length`
-  is absent on compressed responses. Fixed by computing size from the body text
-  we already read, not the header.
+**A configuration API** — I built `customLogConfig({ mode, env })`. Then removed
+it. Zero-config means zero config. `NODE_ENV` is the only knob a consumer needs.
 
----
+**Env var feature flags** — tried `FORCE_HYPERLINK` and `LOG_EDITOR` to make
+clickable links smarter. Removed both. Every feature has to work without the
+user setting anything.
 
-## Iteration
+**Click-to-expand collapse** — wanted browser-DevTools-style collapsible logs.
+Terminals don't support that. Dropped the idea, kept `maxLines` as a simple
+opt-in cap instead.
 
-Things that got cut, changed, or corrected along the way:
+**Source maps in the tarball** — the first published builds shipped 22 `.map`
+files pointing at unpublished source. Caught in an audit. Removed.
 
-- **`customLogConfig`** — a configuration API. Removed. The zero-config
-  identity is more valuable than a config surface.
-- **`FORCE_HYPERLINK` / `LOG_EDITOR` env vars** — attempts to make the
-  clickable link smarter. Removed. `NODE_ENV` is the only env var a consumer
-  should need to know about.
-- **Collapse with click-to-expand** — wanted browser-DevTools-style collapsible
-  logs. Terminals can't do that. Dropped the idea, kept `maxLines` as a simple
-  opt-in cap.
-- **`tap` + `tapAsync` split** — debated separating them. Kept one `tap` that
-  internally routes promises to the async path. The consumer never chooses.
-- **Source maps shipped in the tarball** — the first builds shipped 22 `.map`
-  files pointing at unpublished source. Caught in audit. Removed.
-- **`supportsColor` + `supportsHyperlinks`** — two identical functions checking
-  `stream.isTTY`. Consolidated into one `terminal/isTTY.ts`.
+**Two duplicate isTTY functions** — `supportsColor` and `supportsHyperlinks`
+were byte-for-byte identical. Consolidated into one.
 
-The package today is smaller and simpler than every early version. Each
-iteration removed something rather than adding it.
+The package today is smaller and simpler than every earlier version. Most
+iterations removed something rather than added it.
 
 ---
 
-## The version 1 promise
+## The promise
 
 This package does one thing well: it makes development logging as useful as it
-can be with zero friction and zero dependencies.
+can be, with zero friction and zero dependencies.
 
-If you reach for a production logger with transports, structured output, and
-log levels — that's a different tool for a different job. This one is for the
-part of your day when you're in the terminal, moving fast, and you need to know
-what your code is doing right now.
+If you need a production logger with transports, structured JSON output, and log
+level filtering — that's a different tool for a different job. A production-grade
+logger built on this foundation is a future direction. This one is for the hours
+you spend in the terminal, moving fast, needing to know what your code is doing
+right now.
 
 ---
 
 ## A note on how this was built
 
-The ideas, decisions, and direction in this package are mine. The pain point is
-real — I actually wrote that wrapper in every project.
+The ideas, decisions, and direction are mine. The pain point is real — I actually
+wrote that wrapper in every project.
 
 I used AI (Claude) as a development partner throughout the build. It wrote code,
 caught bugs, ran audits, and pushed back when a design was wrong. Every
-significant decision — what to cut, how to position it, what the zero-env rule
-meant, when to say no to a feature — was mine. The AI did not invent the product.
-It helped me build it faster and think through tradeoffs more rigorously than I
-would have alone.
+significant decision — what to cut, how to position it, when to say no to a
+feature — was mine. The AI didn't invent the product. It helped me build it
+faster and think through tradeoffs more carefully than I would have alone.
 
-I think that is an honest way to build in 2026. The craft is in the decisions,
-not the keystrokes.
+The craft is in the decisions, not the keystrokes.
+
+---
+
+## What this project actually demonstrates
+
+A logger is easy to dismiss. But the logger itself isn't the point.
+
+Here's what building it actually required:
+
+**I wrote real code.** Not just wiring up libraries — actual implementation.
+Stack frame parsing to extract the caller's file and line. OSC-8 terminal escape
+sequences for clickable links. ANSI truecolor codes for the color system.
+`node:util`'s `formatWithOptions` for faithful object rendering. `node:perf_hooks`
+for monotonic timing. Response cloning via the Fetch API so the caller's body
+stays readable. A fire-and-forget async tap that resolves the call site
+synchronously before the async hop so the location stays correct across `await`.
+None of that is copy-paste.
+
+**I wrote Node.js commands and used the platform.** `node --test` for the test
+runner, `node --env-file` awareness, `pathToFileURL` from `node:url`, the
+`process.stdout.columns` API for terminal width, `TextEncoder` for byte-accurate
+size calculation. I used the platform, not just frameworks on top of it.
+
+**I thought like a product person.** Most developers ask "can I build it?" I
+asked "should I build it, and what exactly?" I wrote a PRD, defined a phased
+roadmap, made explicit tradeoffs (what gets cut and why), and chose a positioning
+that left room for a future production logger without closing the door.
+
+**I obsessed over developer experience.** Colored output, tree layout, readable
+timestamps, message indentation, clickable links, response bodies in the terminal.
+These are not engineering problems. They are product and UX decisions that happen
+to require engineering to execute.
+
+**I shipped it.** Dual ESM and CJS build. TypeScript types. SECURITY.md.
+Semantic versioning with automated releases. A test suite with 29 cases. A public
+npm package with provenance. Most side projects never get here.
+
+---
+
+## The strongest way to describe this project
+
+> I identified a recurring developer pain point, wrote a product requirements
+> document, and built a zero-dependency TypeScript logging package from scratch.
+> The implementation involved Node.js internals — call-stack introspection,
+> terminal escape sequences, async response cloning, and the Fetch API. I
+> designed the terminal UI, wrote the documentation, published it to npm with
+> dual ESM/CJS output and signed provenance, and iterated based on real usage.
+> I used AI as an implementation accelerator while making all product and
+> architectural decisions myself.
+
+That tells a hiring manager or senior engineer:
+
+- You can identify problems, not just execute tickets.
+- You understand the Node.js platform, not just frameworks.
+- You care about the people who use what you build.
+- You finish things.
+- You know how to use AI without outsourcing the thinking.

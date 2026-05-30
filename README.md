@@ -9,15 +9,18 @@ No dependencies. No config. Import it and you're done.
 
 ## Why this exists
 
-I kept writing the same custom log wrapper in every project — the one that
-silences itself in production and shows a timestamp. I kept forgetting to use
-it, shipping stray `console.log` calls, and having no idea which file a log
-message came from. So I built the version I always wanted: zero dependencies,
-automatic production silence, and every line tells you exactly where it came
-from as a clickable link.
+I kept writing the same `console.log` wrapper in every project. Every time.
+Copy, paste, rename. And I still shipped it to production by accident. And I
+still spent ten minutes staring at logs trying to figure out which file they
+came from.
 
-> Full story — problem, research, design, build, and what got cut along the
-> way — in [`docs/STORY.md`](docs/STORY.md).
+At some point I just built the thing I always wanted.
+
+One import. No config. No dependencies. It shows you exactly where every log
+came from, and it gets out of the way when you ship.
+
+> The full story — the problem, the research, every design decision, and
+> everything that got cut — is in [`docs/STORY.md`](docs/STORY.md).
 
 ## Features
 

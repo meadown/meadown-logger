@@ -12,6 +12,7 @@
           { "type": "refactor", "release": "patch" },
           { "type": "revert", "release": "patch" },
           { "type": "refactor", "release": "patch" },
+          { "type": "docs", "release": "patch" },
           { "breaking": true, "release": "major" }
         ]
       }
