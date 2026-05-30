@@ -1,3 +1,9 @@
+## [1.8.5](https://github.com/meadown/meadown-logger/compare/v1.8.4...v1.8.5) (2026-05-30)
+
+### Documentation
+
+* refine project narrative and highlight key development insights ([f92423d](https://github.com/meadown/meadown-logger/commit/f92423dab608b98d92a135c39b51b577e579c801))
+
 ## [1.8.4](https://github.com/meadown/meadown-logger/compare/v1.8.3...v1.8.4) (2026-05-30)
 
 ### Documentation
