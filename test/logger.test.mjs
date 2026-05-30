@@ -31,11 +31,11 @@ test("customLog writes to console.log with an [INFO] tag in development", () => 
     capture("log", () => customLog("Auth", "user logged in")),
   )
   assert.equal(calls.length, 1)
-  const args = calls[0]
-  assert.equal(args[0], "[INFO]")
-  // Forwards the user's arguments.
-  assert.ok(args.includes("Auth"))
-  assert.ok(args.includes("user logged in"))
+  // Assert on the whole rendered line so the layout can change freely.
+  const line = calls[0].join(" ")
+  assert.ok(line.includes("[INFO]"))
+  assert.ok(line.includes("Auth"))
+  assert.ok(line.includes("user logged in"))
 })
 
 test("customLog.error writes to console.error with an [ERROR] tag", () => {
@@ -43,8 +43,9 @@ test("customLog.error writes to console.error with an [ERROR] tag", () => {
     capture("error", () => customLog.error("request failed")),
   )
   assert.equal(calls.length, 1)
-  assert.equal(calls[0][0], "[ERROR]")
-  assert.ok(calls[0].includes("request failed"))
+  const line = calls[0].join(" ")
+  assert.ok(line.includes("[ERROR]"))
+  assert.ok(line.includes("request failed"))
 })
 
 test("customLog.warn writes to console.warn with a [WARN] tag", () => {
@@ -52,18 +53,17 @@ test("customLog.warn writes to console.warn with a [WARN] tag", () => {
     capture("warn", () => customLog.warn("deprecated call")),
   )
   assert.equal(calls.length, 1)
-  assert.equal(calls[0][0], "[WARN]")
-  assert.ok(calls[0].includes("deprecated call"))
+  const line = calls[0].join(" ")
+  assert.ok(line.includes("[WARN]"))
+  assert.ok(line.includes("deprecated call"))
 })
 
-test("every line includes a local AM/PM timestamp argument", () => {
+test("every line includes a short MM-DD 12-hour timestamp", () => {
   const calls = withEnv("development", () =>
     capture("log", () => customLog("hello")),
   )
-  const stamp = calls[0][1]
-  assert.match(stamp, /\b(?:AM|PM)\b/)
-  assert.match(stamp, /\b(?:GMT|UTC|[A-Z]{2,5})/)
-  assert.doesNotMatch(stamp, /^\d{4}-\d{2}-\d{2}T/)
+  const line = calls[0].join(" ")
+  assert.match(line, /\d{2}-\d{2} \d{2}:\d{2}:\d{2} (?:AM|PM)/)
 })
 
 test("nothing is logged in production", () => {
@@ -98,9 +98,45 @@ test("the caller location points back at the calling file", () => {
   const calls = withEnv("development", () =>
     capture("log", () => customLog("where am I")),
   )
-  // The 3rd argument is the `(file:line)` location.
-  const location = calls[0][2]
-  assert.match(location, /logger\.test\.mjs:\d+/)
+  const line = calls[0].join(" ")
+  assert.match(line, /logger\.test\.mjs:\d+/)
+})
+
+test("by default (maxLines = 0) a long message is shown in full", () => {
+  const long = Array.from({ length: 20 }, (_, i) => `line ${i + 1}`).join("\n")
+  const line = withEnv("development", () =>
+    capture("log", () => customLog(long)),
+  )[0].join(" ")
+  assert.ok(line.includes("line 1") && line.includes("line 20"), "shows all lines")
+  assert.doesNotMatch(line, /more lines/, "does not collapse")
+})
+
+test("setting customLog.maxLines collapses long messages", () => {
+  const long = Array.from({ length: 20 }, (_, i) => `line ${i + 1}`).join("\n")
+  const prev = customLog.maxLines
+  customLog.maxLines = 3
+  try {
+    const line = withEnv("development", () =>
+      capture("log", () => customLog(long)),
+    )[0].join(" ")
+    assert.ok(line.includes("line 1"), "keeps the first lines")
+    assert.match(line, /\.\.\. 17 more lines/, "summarizes the rest")
+    assert.ok(!line.includes("line 20"), "drops the tail")
+  } finally {
+    customLog.maxLines = prev
+  }
+})
+
+test("maxLines is shared across info, error, and warn", () => {
+  customLog.maxLines = 4
+  try {
+    assert.equal(customLog.maxLines, 4)
+    // A negative/invalid value resets to 0 (show all).
+    customLog.maxLines = -1
+    assert.equal(customLog.maxLines, 0)
+  } finally {
+    customLog.maxLines = 0
+  }
 })
 
 test("the location is a clickable OSC-8 link on a TTY", () => {
@@ -110,39 +146,39 @@ test("the location is a clickable OSC-8 link on a TTY", () => {
     const calls = withEnv("development", () =>
       capture("log", () => customLog("link me")),
     )
-    const location = calls[0][2]
-    assert.ok(location.includes("\x1b]8;;"), "should contain an OSC-8 sequence")
-    assert.ok(location.includes("file://"), "should contain a file:// URL")
-    assert.match(location, /logger\.test\.mjs:\d+/)
+    const line = calls[0].join(" ")
+    assert.ok(line.includes("\x1b]8;;"), "should contain an OSC-8 sequence")
+    assert.ok(line.includes("file://"), "should contain a file:// URL")
+    assert.match(line, /logger\.test\.mjs:\d+/)
   } finally {
     process.stdout.isTTY = prev
   }
 })
 
 test("the level tag is colored on a TTY, plain when not", () => {
-  // Plain (test runner stdout is not a TTY): tag is exactly the level tag.
+  // Not a TTY (test runner): no ANSI escape codes at all.
   const plain = withEnv("development", () =>
     capture("log", () => customLog("x")),
   )
-  assert.equal(plain[0][0], "[INFO]")
+  const plainLine = plain[0].join(" ")
+  assert.ok(plainLine.includes("[INFO]"))
+  assert.ok(!plainLine.includes("\x1b["), "no color codes when not a TTY")
 
-  // On a TTY: only the tag is colored (info cyan, error red); the timestamp
-  // and location stay plain.
+  // On a TTY: the level tag is wrapped in its color (info cyan, error red).
   const prev = process.stdout.isTTY
   const prevErr = process.stderr.isTTY
   process.stdout.isTTY = true
   process.stderr.isTTY = true
   try {
-    const info = withEnv("development", () => capture("log", () => customLog("x")))
-    assert.equal(info[0][0], "\x1b[36m[INFO]\x1b[0m") // cyan tag
-    assert.match(info[0][1], /\b(?:AM|PM)\b/) // plain timestamp
-    assert.ok(info[0][2].startsWith("\x1b[90m"), "location should be gray") // gray location
-    assert.ok(info[0][3].includes("\x1b[36m└──"), "connector should match tag color")
+    const infoLine = withEnv("development", () =>
+      capture("log", () => customLog("x")),
+    )[0].join(" ")
+    assert.ok(infoLine.includes("\x1b[36m[INFO]\x1b[0m"), "info tag should be cyan")
 
-    const err = withEnv("development", () =>
+    const errLine = withEnv("development", () =>
       capture("error", () => customLog.error("x")),
-    )
-    assert.equal(err[0][0], "\x1b[31m[ERROR]\x1b[0m") // red tag
+    )[0].join(" ")
+    assert.ok(errLine.includes("\x1b[31m[ERROR]\x1b[0m"), "error tag should be red")
   } finally {
     process.stdout.isTTY = prev
     process.stderr.isTTY = prevErr

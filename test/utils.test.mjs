@@ -11,12 +11,10 @@ import getCaller from "../dist/utils/getCaller.js"
 import { fileUrl, hyperlink, supportsHyperlinks } from "../dist/utils/link.js"
 import { colorize, supportsColor } from "../dist/utils/color.js"
 
-test("getTimeStamp returns local time with AM/PM and timezone", () => {
+test("getTimeStamp returns a short MM-DD 12-hour timestamp", () => {
   const stamp = getTimeStamp(new Date("2026-05-30T10:00:00.000Z"))
-  assert.equal(typeof stamp, "string")
-  assert.match(stamp, /\b(?:AM|PM)\b/)
-  assert.match(stamp, /\b(?:GMT|UTC|[A-Z]{2,5})/)
-  assert.doesNotMatch(stamp, /^\d{4}-\d{2}-\d{2}T/)
+  // e.g. "05-30 04:00:00 PM" — no year, no timezone.
+  assert.match(stamp, /^\d{2}-\d{2} \d{2}:\d{2}:\d{2} (?:AM|PM)$/)
 })
 
 test("getTimeStamp accepts a specific Date for deterministic formatting", () => {
@@ -68,7 +66,9 @@ test("colorize wraps text in ANSI color codes and resets", () => {
   assert.equal(colorize("hi", "red"), "\x1b[31mhi\x1b[0m")
   assert.equal(colorize("hi", "yellow"), "\x1b[33mhi\x1b[0m")
   assert.equal(colorize("hi", "cyan"), "\x1b[36mhi\x1b[0m")
-  assert.equal(colorize("hi", "dim"), "\x1b[2mhi\x1b[0m")
+  assert.equal(colorize("hi", "gray"), "\x1b[90mhi\x1b[0m")
+  assert.equal(colorize("hi", "teal"), "\x1b[38;5;30mhi\x1b[0m")
+  assert.equal(colorize("hi", "dimTeal"), "\x1b[38;5;23mhi\x1b[0m")
 })
 
 test("supportsColor follows the stream's TTY status (no env vars)", () => {
