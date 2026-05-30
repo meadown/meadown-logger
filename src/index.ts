@@ -5,27 +5,45 @@
  * All rights reserved
  */
 
-import { createLog } from "./utils/index.js"
+import { createLog, getVisibleLines, setVisibleLines } from "./utils/index.js"
 
 /** The logger: a callable for info logs, plus `.error` and `.warn` variants. */
 export interface LogFN {
   (...args: unknown[]): void
   error(...args: unknown[]): void
   warn(...args: unknown[]): void
+  /**
+   * How many lines of a multi-line message to show before collapsing the rest
+   * into a `… N more lines` summary. `0` (the default) shows everything.
+   */
+  maxLines: number
 }
 
 /**
  * Logs to the console, but only outside production. Each line is prefixed with
- * a level tag, a local AM/PM timestamp with timezone, and a clickable link to
- * the file it was called from; all arguments are then printed as-is.
+ * a level tag, a short local timestamp, and a clickable link to the file it was
+ * called from; all arguments are then printed as-is.
  * @example
  * customLog("Auth", "user logged in")
- * // [INFO] 2026-05-30 04:00:00 PM GMT+6 (server.ts:42) Auth user logged in
+ * // [INFO] 05-30 04:00:00 PM (server.ts:42) Auth user logged in
+ * @example
+ * customLog.maxLines = 5 // long messages collapse to 5 lines; 0 = show all
  */
-const customLog: LogFN = Object.assign(createLog("log", "[INFO]"), {
+const logger = Object.assign(createLog("log", "[INFO]"), {
   error: createLog("error", "[ERROR]"),
   warn: createLog("warn", "[WARN]"),
 })
+
+// `maxLines` is a live getter/setter backed by the shared collapse setting, so
+// setting it once affects info, error, and warn alike.
+Object.defineProperty(logger, "maxLines", {
+  get: getVisibleLines,
+  set: setVisibleLines,
+  enumerable: true,
+  configurable: true,
+})
+
+const customLog = logger as LogFN
 
 export { customLog }
 export default customLog

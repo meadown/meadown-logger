@@ -5,6 +5,8 @@
  * All rights reserved
  */
 
+import { formatWithOptions } from "node:util"
+
 import getCaller, { type Caller } from "./getCaller.js"
 import getTimeStamp from "./getTimeStamp.js"
 import { fileUrl, hyperlink, supportsHyperlinks } from "./link.js"
@@ -19,6 +21,50 @@ const TAG_COLOR: Record<LogChannel, Color> = {
   log: "cyan",
   warn: "yellow",
   error: "red",
+}
+
+/** Visible width of the `└── ` branch; message lines left-align under it. */
+const MESSAGE_INDENT = "   "
+
+/** Max message lines to show before collapsing the rest; 0 (default) shows all. */
+let visibleLines = 0
+
+/** How many lines a long message shows before collapsing (0 = all). */
+export function getVisibleLines(): number {
+  return visibleLines
+}
+
+/** Set how many lines a long message shows before collapsing (0 = all). */
+export function setVisibleLines(value: number): void {
+  visibleLines = Number.isFinite(value) && value > 0 ? Math.floor(value) : 0
+}
+
+/**
+ * Collapses a long multi-line message to {@link visibleLines} lines, replacing
+ * the rest with a dimmed `… N more lines` summary. When `visibleLines` is 0
+ * (the default) nothing is collapsed — the full message is shown.
+ */
+function collapse(text: string, useColor: boolean): string {
+  if (visibleLines < 1) return text
+  const lines = text.split("\n")
+  if (lines.length <= visibleLines) return text
+  const hidden = lines.length - visibleLines
+  const summary = `${MESSAGE_INDENT}... ${hidden} more line${hidden === 1 ? "" : "s"}`
+  const visible = lines.slice(0, visibleLines)
+  visible.push(useColor ? colorize(summary, "gray") : summary)
+  return visible.join("\n")
+}
+
+/**
+ * Renders the args into a single message string exactly as console would —
+ * objects/errors via util.inspect, `%s`/`%d` format specifiers, and colors when
+ * on a terminal — then hang-indents every continuation line so multi-line
+ * output (multi-line strings, pretty-printed objects, error stacks) all stays
+ * left-aligned under the `└── ` branch, and collapses very long output.
+ */
+function renderMessage(args: unknown[], useColor: boolean): string {
+  const text = formatWithOptions({ colors: useColor }, ...args)
+  return collapse(text.replace(/\n/g, `\n${MESSAGE_INDENT}`), useColor)
 }
 
 /**
@@ -58,16 +104,27 @@ export default function createLog(
     const caller = getCaller()
     const location = formatLocation(caller, streamName)
 
-    // On a real terminal: color the level tag and the `└──` connector (same
-    // color), and dim the location to gray. The timestamp stays plain.
+    // Colors (terminal only): tag by level, timestamp teal, location dim teal,
+    // branch and separator gray.
     const useColor = supportsColor(streamName)
-    const color = TAG_COLOR[channel]
-    const tagOut = useColor ? colorize(tag, color) : tag
-    const locOut = useColor ? colorize(`(${location})`, "gray") : `(${location})`
-    const connector = useColor ? colorize("└──", color) : "└──"
+    const tagOut = useColor ? colorize(tag, TAG_COLOR[channel]) : tag
+    const timeStamp = useColor
+      ? colorize(getTimeStamp(), "teal")
+      : getTimeStamp()
+    const locOut = useColor
+      ? colorize(`(${location})`, "dimTeal")
+      : `(${location})`
+    const connector = useColor ? colorize("├──", "gray") : "└──"
+    const connectorBottom = useColor ? colorize("└──", "gray") : "└──"
+    const separator = useColor ? colorize("-", "gray") : "-"
 
-    // `\n` + connector puts the message on its own line under a tree branch;
-    // console's separator space sits between the connector and the message.
-    console[channel](tagOut, getTimeStamp(), locOut, `\n${connector}`, ...args, `\n`)
+    // Layout: the tag, the message hanging off a `├──` branch, then the
+    // timestamp and location on a `└──` branch below.
+    const message = renderMessage(args, useColor)
+    const meta = `\n${connectorBottom} ${timeStamp} ${separator} ${locOut}`
+
+    // Leading `\n` puts a blank line above each entry — in the same call and on
+    // the right stream (a separate `console.log` would always hit stdout).
+    console[channel](`\n${tagOut}`, `\n${connector}`, message, meta)
   }
 }
