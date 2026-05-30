@@ -1,3 +1,18 @@
+## [1.6.0](https://github.com/meadown/meadown-logger/compare/v1.5.2...v1.6.0) (2026-05-30)
+
+### Features
+
+* expose logger as primary api ([4417c3a](https://github.com/meadown/meadown-logger/commit/4417c3abbd469062285080fae8f8a4b8bfbe67ee))
+
+### Refactoring
+
+* deprecate customLog alias ([5b5c499](https://github.com/meadown/meadown-logger/commit/5b5c4997474c7e10f32b12096e489f9a7143bc76))
+
+### Documentation
+
+* mark customLog as deprecated ([f9b2884](https://github.com/meadown/meadown-logger/commit/f9b28847958bdeeed141ccfc908f458653cf87eb))
+* recommend logger import ([2c8eb1c](https://github.com/meadown/meadown-logger/commit/2c8eb1c89344a723e1ff4112bb2ef853990e6ea5))
+
 ## [1.5.2](https://github.com/meadown/meadown-logger/compare/v1.5.1...v1.5.2) (2026-05-30)
 
 ### Bug Fixes
