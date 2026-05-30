@@ -11,7 +11,8 @@ const CODES = {
   yellow: 33,
   cyan: 36,
   gray: 90, // bright black — renders as light gray
-  dim: 2,
+  teal: "38;5;30", // 256-color teal (#008787)
+  dimTeal: "38;5;23", // 256-color darker teal (#005f5f)
 } as const
 
 /** The named colors/styles {@link colorize} understands. */
