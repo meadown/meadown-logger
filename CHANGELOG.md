@@ -1,3 +1,9 @@
+## [1.8.3](https://github.com/meadown/meadown-logger/compare/v1.8.2...v1.8.3) (2026-05-30)
+
+### Documentation
+
+* update README and SECURITY.md for clarity; add header image ([4b91371](https://github.com/meadown/meadown-logger/commit/4b91371afc0fb6193275b4ae7c770fc4eb60b057))
+
 ## [1.8.2](https://github.com/meadown/meadown-logger/compare/v1.8.1...v1.8.2) (2026-05-30)
 
 ### Bug Fixes
