@@ -52,6 +52,7 @@
     "test": "tsc && node --test \"test/**/*.test.mjs\"",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
+    "demo": "pnpm build && node examples/demo.mjs",
     "prepublishOnly": "pnpm run lint && pnpm test && pnpm run build",
     "prepare": "husky",
     "release": "semantic-release"
