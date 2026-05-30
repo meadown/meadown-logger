@@ -117,7 +117,7 @@ quietly step aside.
 ## Security
 
 It's a tiny, zero-dependency package with no file, network, or dynamic-code access.
-See [SECURITY.md](https://github.com/meadown/meadown-logger/blob/main/SECURITY.md)
+See [SECURITY.md](https://www.npmjs.com/package/@meadown/logger?activeTab=code)
 for the security model and how to report a vulnerability. One thing to know: like
 `console.log`, log arguments are written to the terminal as-is and are not
 sanitized — don't log untrusted data to a terminal you trust.
