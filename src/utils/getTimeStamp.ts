@@ -5,13 +5,12 @@
  * All rights reserved
  */
 
-// Time-only formatter (date is built separately so it stays ISO `YYYY-MM-DD`).
+// Time-only 12-hour formatter (date is built separately, timezone is dropped).
 const TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
   hour: "2-digit",
   minute: "2-digit",
   second: "2-digit",
   hour12: true,
-  timeZoneName: "short",
 })
 
 function pad(value: number): string {
@@ -19,11 +18,11 @@ function pad(value: number): string {
 }
 
 /**
- * Returns local time as an ISO date plus a readable AM/PM time and timezone,
- * e.g. `2026-05-29 04:00:00 PM GMT+6`. The date and time are both local, so they
- * stay consistent.
+ * Returns a short local timestamp: month-day plus 12-hour time, e.g.
+ * `05-30 04:00:00 PM`. The year and timezone are dropped to keep log lines
+ * compact; date and time are both local so they stay consistent.
  */
 export default function getTimeStamp(date = new Date()): string {
-  const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  const datePart = `${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
   return `${datePart} ${TIME_FORMATTER.format(date)}`
 }
