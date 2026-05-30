@@ -24,13 +24,13 @@ yarn add @meadown/logger
 ## Using it
 
 ```ts
-import customLog from "@meadown/logger"
+import logger from "@meadown/logger"
 
-customLog("Hello world")
-customLog("Auth", "user logged in") // every argument is printed as-is, like console.log
+logger("Hello world")
+logger("Auth", "user logged in") // every argument is printed as-is, like console.log
 
-customLog.warn("This is deprecated")
-customLog.error("Something went wrong")
+logger.warn("This is deprecated")
+logger.error("Something went wrong")
 ```
 
 You'll see something like:
@@ -55,10 +55,10 @@ wrapper makes every log blame _that_ file instead of wherever you actually logge
 
 ```ts
 // GOOD: pass it through — the (file:line) stays honest
-export { default as customLog } from "@meadown/logger"
+export { default as logger } from "@meadown/logger"
 
 // BAD: now every log points at this file, not the real caller
-export const customLog = (...args) => log(...args)
+export const logger = (...args) => log(...args)
 ```
 
 ## Color-coded levels
@@ -91,14 +91,26 @@ chatty multi-line message is drowning out your terminal, you can cap how many
 lines each message shows:
 
 ```ts
-import customLog from "@meadown/logger"
+import logger from "@meadown/logger"
 
-customLog.maxLines = 5 // show the first 5 lines, then "... N more lines"
-customLog.maxLines = 0 // back to the default — show everything
+logger.maxLines = 5 // show the first 5 lines, then "... N more lines"
+logger.maxLines = 0 // back to the default — show everything
 ```
 
 It only trims the _message_, never the tag, timestamp, or location, and the setting
-applies to `customLog`, `.error`, and `.warn` alike.
+applies to `logger`, `.error`, and `.warn` alike.
+
+## Compatibility alias
+
+Older examples used `customLog`. That name still works as a named export, but new
+code should prefer `logger`:
+
+```ts
+import logger, { customLog } from "@meadown/logger"
+
+logger("new code")
+customLog("old code still works")
+```
 
 ## What about production?
 
