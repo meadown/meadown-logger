@@ -1,3 +1,21 @@
+## [1.5.0](https://github.com/meadown/meadown-logger/compare/v1.4.0...v1.5.0) (2026-05-30)
+
+### Features
+
+* add teal palette colors and drop unused styles ([48ddebd](https://github.com/meadown/meadown-logger/commit/48ddebd76b9308c343009d0a12e729cd736d6d58))
+* collapsible messages, tree layout, and clickable source ([4ce28ef](https://github.com/meadown/meadown-logger/commit/4ce28ef4d98c2c38848aa5c619372fd6b7a74a63))
+
+### Refactoring
+
+* shorten timestamp to month-day 12-hour format ([be00e25](https://github.com/meadown/meadown-logger/commit/be00e259365742b330f0cff6adf476bb59f0be35))
+
+### Documentation
+
+* add security policy ([5dd092b](https://github.com/meadown/meadown-logger/commit/5dd092bbc6c467c255bef35c7c61033911306709))
+* document colors, clickable source, and re-export caveat ([8bf3da2](https://github.com/meadown/meadown-logger/commit/8bf3da209ab18d3031b9a62332bd40d6c709e01b))
+* document maxLines message trimming ([f23357b](https://github.com/meadown/meadown-logger/commit/f23357b3b3c88562fecf10b633a7cc743c9daf78))
+* update license copyright holder to meadown ([bb5285b](https://github.com/meadown/meadown-logger/commit/bb5285b57e22bee191da868599a10b7c63ba9135))
+
 ## [1.4.0](https://github.com/meadown/meadown-logger/compare/v1.3.1...v1.4.0) (2026-05-29)
 
 ### Features
