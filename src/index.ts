@@ -5,13 +5,23 @@
  * All rights reserved
  */
 
-import { createLog, getVisibleLines, setVisibleLines } from "./utils/index.js"
+import createLog from "./core/createLog.js"
+import createTap from "./tap/createTap.js"
+import { getVisibleLines, setVisibleLines } from "./core/writeLog.js"
 
-/** The logger: a callable for info logs, plus `.error` and `.warn` variants. */
+/** The logger: a callable for info logs, plus `.error`, `.warn`, and `.tap`. */
 export interface LogFN {
   (...args: unknown[]): void
   error(...args: unknown[]): void
   warn(...args: unknown[]): void
+  /**
+   * Logs `value` (optionally tagged with `label`) and returns it **unchanged**,
+   * so it drops into any expression: `const u = logger.tap(getUser(), "user")`.
+   * Pass a **promise** (e.g. a `fetch`) and you get the same promise back while
+   * its elapsed time — and the HTTP status if it's a `Response` — is logged in
+   * the background. Silent in production; the value always flows through.
+   */
+  tap<T>(value: T, label?: string): T
   /**
    * How many lines of a multi-line message to show before collapsing the rest
    * into a `… N more lines` summary. `0` (the default) shows everything.
@@ -32,6 +42,7 @@ export interface LogFN {
 const logger = Object.assign(createLog("log", "[INFO]"), {
   error: createLog("error", "[ERROR]"),
   warn: createLog("warn", "[WARN]"),
+  tap: createTap(),
 }) as LogFN
 
 // `maxLines` is a live getter/setter backed by the shared collapse setting, so

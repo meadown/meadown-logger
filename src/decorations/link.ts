@@ -28,15 +28,3 @@ export function hyperlink(text: string, url: string): string {
   const BEL = "\x07"
   return `${OSC}${url}${BEL}${text}${OSC}${BEL}`
 }
-
-/**
- * Whether to emit OSC-8 hyperlinks for the given stream. Driven solely by the
- * stream being an interactive terminal (`isTTY`) — no env vars, no config. When
- * output is piped or redirected, links are skipped so escapes never end up in
- * files or logs. Terminals that don't understand OSC-8 just show the plain text.
- */
-export function supportsHyperlinks(streamName: "stdout" | "stderr"): boolean {
-  if (typeof process === "undefined") return false
-  const stream = streamName === "stdout" ? process.stdout : process.stderr
-  return Boolean(stream?.isTTY)
-}
