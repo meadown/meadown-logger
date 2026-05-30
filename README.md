@@ -32,14 +32,14 @@ customLog.error("Something went wrong")
 You'll see something like:
 
 ```text
-[INFO] 2026-05-30 04:00:00 PM GMT+6 (server.ts:42)
+[INFO] 05-30 04:00:00 PM (server.ts:42)
 └── Auth user logged in
 ```
 
-The first line carries the level tag — `[INFO]`, `[WARN]`, or `[ERROR]` — the
-local timestamp with AM/PM and timezone, and the source location. Your message hangs
-off a `└──` branch on the line below (colored to match the level), so it's easy to
-scan down a busy terminal.
+The first line carries the level tag — `[INFO]`, `[WARN]`, or `[ERROR]` — a short
+local timestamp (month-day and 12-hour time), and the source location. Your message
+hangs off a `└──` branch on the line below (colored to match the level), so it's easy
+to scan down a busy terminal.
 
 ### One thing if you re-export it
 
@@ -94,4 +94,4 @@ quietly step aside.
 
 ## License
 
-MIT © Dewan Mobashirul
+MIT © meadown
