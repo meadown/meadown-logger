@@ -43,6 +43,10 @@ Object.defineProperty(logger, "maxLines", {
   configurable: true,
 })
 
+/**
+ * @deprecated Use {@link logger} instead. This alias remains for compatibility
+ * with older examples and will be removed in a future major version.
+ */
 const customLog = logger
 
 export { customLog, logger }
