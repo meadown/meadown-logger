@@ -1,3 +1,19 @@
+## [1.8.0](https://github.com/meadown/meadown-logger/compare/v1.7.0...v1.8.0) (2026-05-30)
+
+### Features
+
+* add logger tap support ([c5837ef](https://github.com/meadown/meadown-logger/commit/c5837ef9f84098f86abe3944c7450cba3d232e54))
+
+### Refactoring
+
+* split logger core modules ([1bbe7cd](https://github.com/meadown/meadown-logger/commit/1bbe7cd903937650f1da2d32b563f4b050861ebd))
+
+### Documentation
+
+* add logger demos ([a49bfa8](https://github.com/meadown/meadown-logger/commit/a49bfa8ae89ed92608adac9e0d557e4dab666643))
+* clarify tap security boundary ([63d4b05](https://github.com/meadown/meadown-logger/commit/63d4b0517701e4930b244239d2a5e75ba4069a1d))
+* reorganize logger documentation ([7d2bb19](https://github.com/meadown/meadown-logger/commit/7d2bb198677adac795cc3a8b08d92711de16fe43))
+
 ## [1.7.0](https://github.com/meadown/meadown-logger/compare/v1.6.0...v1.7.0) (2026-05-30)
 
 ### Features

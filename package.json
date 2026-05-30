@@ -1,6 +1,6 @@
 {
   "name": "@meadown/logger",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "A development-focused logger for Node.js and TypeScript — zero dependencies, clickable source links, and API response logging built in.",
   "keywords": [
     "logger",
