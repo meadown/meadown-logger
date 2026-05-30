@@ -32,14 +32,15 @@ customLog.error("Something went wrong")
 You'll see something like:
 
 ```text
-[INFO] 05-30 04:00:00 PM (server.ts:42)
-└── Auth user logged in
+[INFO]
+├── Auth user logged in
+└── 05-30 04:00:00 PM - (server.ts:42)
 ```
 
-The first line carries the level tag — `[INFO]`, `[WARN]`, or `[ERROR]` — a short
-local timestamp (month-day and 12-hour time), and the source location. Your message
-hangs off a `└──` branch on the line below (colored to match the level), so it's easy
-to scan down a busy terminal.
+Each entry is a little tree: the level tag — `[INFO]`, `[WARN]`, or `[ERROR]` — on
+top, your message hanging off a `├──` branch, and a short local timestamp
+(month-day, 12-hour time) plus the source location on the `└──` branch below.
+Entries are spaced apart by a blank line so they're easy to scan in a busy terminal.
 
 ### One thing if you re-export it
 
@@ -59,12 +60,13 @@ export const customLog = (...args) => log(...args)
 ## Color-coded levels
 
 The level tag is colored so you can spot what matters at a glance — `[INFO]` in
-cyan, `[WARN]` in yellow, `[ERROR]` in red. The `(file:line)` location is dimmed to
-light gray so it stays out of the way, and the timestamp is left plain.
+cyan, `[WARN]` in yellow, `[ERROR]` in red. The timestamp and source location are
+tinted teal, and the tree branches sit in a quiet gray, so the colored level tag is
+what your eye lands on first.
 
 Colors appear automatically when you're in a terminal. When output is piped to a
-file or another program, the tag prints as plain `[INFO]` text — no stray color
-codes in your log files. Nothing to configure.
+file or another program, everything prints as plain text — no stray color codes in
+your log files. Nothing to configure.
 
 ## Click to open the source
 
