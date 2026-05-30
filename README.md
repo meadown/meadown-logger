@@ -100,18 +100,6 @@ logger.maxLines = 0 // back to the default — show everything
 It only trims the _message_, never the tag, timestamp, or location, and the setting
 applies to `logger`, `.error`, and `.warn` alike.
 
-## Deprecated alias
-
-Older examples used `customLog`. That name still works as a named export for now,
-but it is deprecated and new code should use `logger`:
-
-```ts
-import logger, { customLog } from "@meadown/logger"
-
-logger("new code")
-customLog("old code still works") // deprecated
-```
-
 ## What about production?
 
 Here's the nice part: you don't have to do anything. Logs show up while you're
