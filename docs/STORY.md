@@ -192,37 +192,24 @@ The craft is in the decisions, not the keystrokes.
 
 ## What this project actually demonstrates
 
-A logger is easy to dismiss. But the logger itself isn't the point.
+A logger sounds small. What went into building it isn't.
 
-Here's what building it actually required:
+I parsed call stacks to extract file and line numbers at the right frame depth.
+I implemented OSC-8 terminal hyperlinks so logs become clickable. I built an
+async `tap` that captures the call site synchronously before an `await` — because
+if you do it after, the location points at the wrong file. I cloned `Response`
+objects so the caller's body stays readable while we log ours in the background.
+I used `node:perf_hooks` for monotonic timing, `TextEncoder` for byte-accurate
+response sizes, and `node:util`'s `formatWithOptions` so objects render exactly
+like `console.log` — colors and all.
 
-**I wrote real code.** Not just wiring up libraries — actual implementation.
-Stack frame parsing to extract the caller's file and line. OSC-8 terminal escape
-sequences for clickable links. ANSI truecolor codes for the color system.
-`node:util`'s `formatWithOptions` for faithful object rendering. `node:perf_hooks`
-for monotonic timing. Response cloning via the Fetch API so the caller's body
-stays readable. A fire-and-forget async tap that resolves the call site
-synchronously before the async hop so the location stays correct across `await`.
-None of that is copy-paste.
+None of that is gluing libraries together. It's understanding the platform and
+making deliberate choices.
 
-**I wrote Node.js commands and used the platform.** `node --test` for the test
-runner, `node --env-file` awareness, `pathToFileURL` from `node:url`, the
-`process.stdout.columns` API for terminal width, `TextEncoder` for byte-accurate
-size calculation. I used the platform, not just frameworks on top of it.
-
-**I thought like a product person.** Most developers ask "can I build it?" I
-asked "should I build it, and what exactly?" I wrote a PRD, defined a phased
-roadmap, made explicit tradeoffs (what gets cut and why), and chose a positioning
-that left room for a future production logger without closing the door.
-
-**I obsessed over developer experience.** Colored output, tree layout, readable
-timestamps, message indentation, clickable links, response bodies in the terminal.
-These are not engineering problems. They are product and UX decisions that happen
-to require engineering to execute.
-
-**I shipped it.** Dual ESM and CJS build. TypeScript types. SECURITY.md.
-Semantic versioning with automated releases. A test suite with 29 cases. A public
-npm package with provenance. Most side projects never get here.
+Beyond the code: I wrote a PRD, defined a roadmap with explicit phases and
+tradeoffs, designed the terminal output as a UX problem not just an engineering
+one, published with dual ESM/CJS output and signed provenance, wrote a security
+policy, and documented every significant decision that got made or reversed.
 
 ---
 
@@ -230,17 +217,24 @@ npm package with provenance. Most side projects never get here.
 
 > I identified a recurring developer pain point, wrote a product requirements
 > document, and built a zero-dependency TypeScript logging package from scratch.
-> The implementation involved Node.js internals — call-stack introspection,
+> The implementation involved Node.js internals call-stack introspection,
 > terminal escape sequences, async response cloning, and the Fetch API. I
 > designed the terminal UI, wrote the documentation, published it to npm with
 > dual ESM/CJS output and signed provenance, and iterated based on real usage.
 > I used AI as an implementation accelerator while making all product and
 > architectural decisions myself.
 
-That tells a hiring manager or senior engineer:
+**What I gained from building this:**
 
-- You can identify problems, not just execute tickets.
-- You understand the Node.js platform, not just frameworks.
-- You care about the people who use what you build.
-- You finish things.
-- You know how to use AI without outsourcing the thinking.
+| Experience           | How I applied it                                                                    |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| Product thinking     | Wrote a PRD, defined a phased roadmap, made explicit tradeoffs                      |
+| API design           | Designed `logger.tap(fetch(...))` one line, transparent, zero friction              |
+| Node.js platform     | Stack introspection, OSC-8 terminal escapes, Fetch cloning, perf_hooks, TextEncoder |
+| TypeScript           | Typed from scratch, dual ESM/CJS output, full type exports, no `@types` needed      |
+| Developer experience | Terminal UI, color system, tree layout, clickable source links, readable timestamps |
+| Shipping             | Published to npm, semantic versioning, automated releases, signed provenance        |
+| Documentation        | README, SECURITY.md, ROADMAP.md, STORY.md all written and public                    |
+| Testing              | 29 tests async paths, location accuracy, circular objects, edge cases               |
+| Security             | Zero deps, no disk/network access, trust boundary documented, advisory process      |
+| AI fluency           | Used Claude as an implementation partner, owned all product and technical decisions |
