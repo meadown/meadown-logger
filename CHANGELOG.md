@@ -1,3 +1,9 @@
+## [1.8.1](https://github.com/meadown/meadown-logger/compare/v1.8.0...v1.8.1) (2026-05-30)
+
+### Bug Fixes
+
+* color update and sample screenshot add to readme ([d7b1b0d](https://github.com/meadown/meadown-logger/commit/d7b1b0defcfa3a4a433aeca9fec61506aa32ef04))
+
 ## [1.8.0](https://github.com/meadown/meadown-logger/compare/v1.7.0...v1.8.0) (2026-05-30)
 
 ### Features
