@@ -173,12 +173,12 @@ test("the level tag is colored on a TTY, plain when not", () => {
     const infoLine = withEnv("development", () =>
       capture("log", () => logger("x")),
     )[0].join(" ")
-    assert.ok(infoLine.includes("\x1b[36m[INFO]\x1b[0m"), "info tag should be cyan")
+    assert.ok(infoLine.includes("\x1b[38;5;37m[INFO]\x1b[0m"), "info tag should be cyan")
 
     const errLine = withEnv("development", () =>
       capture("error", () => logger.error("x")),
     )[0].join(" ")
-    assert.ok(errLine.includes("\x1b[31m[ERROR]\x1b[0m"), "error tag should be red")
+    assert.ok(errLine.includes("\x1b[38;2;239;68;68m[ERROR]\x1b[0m"), "error tag should be red")
   } finally {
     process.stdout.isTTY = prev
     process.stderr.isTTY = prevErr

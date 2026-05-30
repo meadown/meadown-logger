@@ -6,10 +6,11 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import getTimeStamp from "../dist/utils/getTimeStamp.js"
-import getCaller from "../dist/utils/getCaller.js"
-import { fileUrl, hyperlink, supportsHyperlinks } from "../dist/utils/link.js"
-import { colorize, supportsColor } from "../dist/utils/color.js"
+import getTimeStamp from "../dist/time/getTimeStamp.js"
+import getCaller from "../dist/caller/getCaller.js"
+import { fileUrl, hyperlink } from "../dist/decorations/link.js"
+import { colorize } from "../dist/colors/color.js"
+import { isTTY } from "../dist/terminal/isTTY.js"
 
 test("getTimeStamp returns a short MM-DD 12-hour timestamp", () => {
   const stamp = getTimeStamp(new Date("2026-05-30T10:00:00.000Z"))
@@ -50,34 +51,22 @@ test("fileUrl builds a valid file:// URL (no line suffix), passing through URLs"
   assert.equal(fileUrl("file:///app/server.ts"), "file:///app/server.ts")
 })
 
-test("supportsHyperlinks follows the stream's TTY status (no env vars)", () => {
-  const prev = process.stdout.isTTY
-  try {
-    process.stdout.isTTY = true
-    assert.equal(supportsHyperlinks("stdout"), true)
-    process.stdout.isTTY = false
-    assert.equal(supportsHyperlinks("stdout"), false)
-  } finally {
-    process.stdout.isTTY = prev
-  }
-})
-
 test("colorize wraps text in ANSI color codes and resets", () => {
-  assert.equal(colorize("hi", "red"), "\x1b[31mhi\x1b[0m")
+  assert.equal(colorize("hi", "red"), "\x1b[38;2;239;68;68mhi\x1b[0m")
   assert.equal(colorize("hi", "yellow"), "\x1b[33mhi\x1b[0m")
-  assert.equal(colorize("hi", "cyan"), "\x1b[36mhi\x1b[0m")
+  assert.equal(colorize("hi", "cyan"), "\x1b[38;5;37mhi\x1b[0m")
   assert.equal(colorize("hi", "gray"), "\x1b[90mhi\x1b[0m")
   assert.equal(colorize("hi", "teal"), "\x1b[38;5;30mhi\x1b[0m")
   assert.equal(colorize("hi", "dimTeal"), "\x1b[38;5;23mhi\x1b[0m")
 })
 
-test("supportsColor follows the stream's TTY status (no env vars)", () => {
+test("isTTY follows the stream's TTY status (no env vars)", () => {
   const prev = process.stdout.isTTY
   try {
     process.stdout.isTTY = true
-    assert.equal(supportsColor("stdout"), true)
+    assert.equal(isTTY("stdout"), true)
     process.stdout.isTTY = false
-    assert.equal(supportsColor("stdout"), false)
+    assert.equal(isTTY("stdout"), false)
   } finally {
     process.stdout.isTTY = prev
   }
