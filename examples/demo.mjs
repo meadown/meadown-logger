@@ -1,6 +1,6 @@
 /*
  * demo.mjs
- * A quick manual playground for customLog.
+ * A quick manual playground for logger.
  *
  * Run it:
  *   pnpm build && node examples/demo.mjs
@@ -11,21 +11,32 @@
  * to clean plain text with no escape codes.
  */
 
-import customLog from "../dist/index.js"
+import logger from "../dist/index.js"
 
-customLog.maxLines = 0 // O means no limit, all lines will consoled
+logger.maxLines = 0 // 0 means no limit — show all lines
 
 // Basic info log.
-customLog("Server running on port 5000")
+logger("Server running on port 5000")
 
 // Multiple arguments — everything is printed as-is, like console.log.
-customLog("Auth", "user logged in", { userId: 42, role: "admin" })
+logger("Auth", "user logged in", { userId: 42, role: "admin" })
 
 // Objects and arrays keep console's native formatting.
-customLog("Cache stats", { hits: 128, misses: 7, ratio: 0.95 })
+logger("Cache stats", { hits: 128, misses: 7, ratio: 0.95 })
 
 // Warnings go to stderr with a yellow tag.
-customLog.warn("disk usage above 80%")
+logger.warn("disk usage above 80%")
 
 // Errors go to stderr with a red tag; pass along an Error for the stack.
-customLog.error("database connection failed", new Error("ECONNREFUSED"))
+logger.error("database connection failed", new Error("ECONNREFUSED"))
+
+// Arrow function — location still points here, not at an internal.
+const arrowFunction = () => {
+  logger("inside an arrow function")
+  return logger.tap([1, 2, 3], "arrow-fn")
+}
+arrowFunction()
+
+// tap logs a value and returns it, so it drops into any expression.
+const port = logger.tap(5000, "port") // logs it, `port` is still 5000
+logger("using port", port)

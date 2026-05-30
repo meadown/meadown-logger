@@ -1,7 +1,7 @@
 {
   "name": "@meadown/logger",
   "version": "1.7.0",
-  "description": "A tiny, zero-dependency logger for Node.js and TypeScript that tags each line, timestamps it, shows the source file and line, and goes quiet in production.",
+  "description": "A development-focused logger for Node.js and TypeScript — zero dependencies, clickable source links, and API response logging built in.",
   "keywords": [
     "logger",
     "logging",
@@ -54,6 +54,8 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "demo": "pnpm build && node examples/demo.mjs",
+    "demo:calls": "pnpm build && node examples/call-sites.mjs",
+    "demo:api": "pnpm build && node examples/api.mjs",
     "prepublishOnly": "pnpm run lint && pnpm test && pnpm run build",
     "prepare": "husky",
     "release": "semantic-release"
