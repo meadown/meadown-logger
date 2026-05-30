@@ -2,14 +2,14 @@
 
 ## Reporting a vulnerability
 
-Please report security issues **privately** by email to
-[inbox.meadown@gmail.com](mailto:inbox.meadown@gmail.com).
+Please report security issues **privately** — do not open a public issue for
+anything exploitable.
+
+- **Preferred:** [Open a private security advisory →](https://github.com/meadown/meadown-logger/security/advisories/new)
+- **Alternative:** email [inbox.meadown@gmail.com](mailto:inbox.meadown@gmail.com)
 
 Include a description, the affected version, and steps to reproduce. We aim to
 acknowledge reports within a few days and to coordinate a fix and disclosure.
-
-> Once this repository is public, reports can also be filed via GitHub Security
-> Advisories ("Report a vulnerability" under the Security tab).
 
 ## Supported versions
 

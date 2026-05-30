@@ -1,3 +1,5 @@
+![meadown/logger — a development-focused logger for Node.js](media/header.png)
+
 # @meadown/logger
 
 A **development-focused logger** for Node.js and TypeScript — built to make your
@@ -63,7 +65,7 @@ actual response body. The promise flows through untouched. One line of code.
 ```ts
 const user = await logger.tap(
   fetch("https://api.example.com/users/1"),
-  "GET /users/1"
+  "GET /users/1",
 )
 // user is the real Response — your code doesn't change at all
 ```
@@ -93,7 +95,7 @@ back? Without opening DevTools.
 Works with plain values too — logs it, returns it, nothing changes:
 
 ```ts
-const port = logger.tap(5000, "port")          // port is still 5000
+const port = logger.tap(5000, "port") // port is still 5000
 const user = logger.tap(await getUser(), "user") // same as without tap
 ```
 
