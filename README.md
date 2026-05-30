@@ -88,6 +88,8 @@ const user = await logger.tap(
 You can immediately see: was it successful? How long did it take? What came
 back? Without opening DevTools.
 
+![API response logging — tap a fetch and see timing, status, size, and body](media/tap-api-demo.png)
+
 Works with plain values too — logs it, returns it, nothing changes:
 
 ```ts

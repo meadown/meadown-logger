@@ -22,8 +22,8 @@ writing config.**
 The core experience is done:
 
 - **Zero dependencies** — nothing installs with it, ever.
-- **Clickable source links** — every log line links to the exact file and line
-  it came from. Click it in your terminal and you're there.
+- **Clickable source links** — every log line is a clickable link that opens
+  the source file. The line number is always visible in the label.
 - **Color-coded levels** — `[INFO]` deep cyan, `[WARN]` yellow, `[ERROR]` red.
   Degrades gracefully to plain text when piped.
 - **Tree layout** — clean, scannable output with a consistent structure.
@@ -71,38 +71,31 @@ take? What came back? Without touching DevTools.
 
 ---
 
-## Phase 1 — what's next (the visible wins)
-
-These are the features developers will notice immediately in a screenshot.
-They drive adoption more than any internal metric.
+## Phase 1 — shipped ✅
 
 ### Pretty status badges
 
-Right now status is plain text. The plan:
+Status codes are colored by outcome:
 
 ```
-200 OK          green
-201 Created     green
-304             cyan
-404 Not Found   yellow
+200 OK           green
+201 Created      green
+304              cyan
+404 Not Found    yellow
 500 Server Error red
 ```
 
-Every status code colored by outcome — green for success, yellow for client
-errors, red for server errors, cyan for redirects.
-
 ### Slow request highlighting
 
-Time already shows in the response block. The plan is to color it:
+Time is colored automatically:
 
 ```
-65ms     →  green    (fast)
-1.2s     →  yellow   (slow)
-5.8s     →  red      (very slow)
+65ms    →  green   (fast)
+1.2s    →  yellow  (slow)
+5.8s    →  red     (very slow)
 ```
 
-No threshold to configure. The colors just tell you whether to care. That
-visual signal — a glowing red time — is what makes the logger feel smart.
+No threshold to configure.
 
 ---
 

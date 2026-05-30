@@ -48,8 +48,8 @@ function isResponse(value: unknown): value is ResponseLike {
 function formatDuration(ms: number, useColor: boolean): string {
   const text = ms >= 1000 ? `${(ms / 1000).toFixed(2)}s` : `${ms}ms`
   if (!useColor) return text
-  if (ms >= 3000) return colorize(text, "red")
-  if (ms >= 1000) return colorize(text, "yellow")
+  if (ms >= 2000) return colorize(text, "red")
+  if (ms >= 500) return colorize(text, "yellow")
   return colorize(text, "green")
 }
 
