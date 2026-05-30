@@ -24,15 +24,15 @@ export interface LogFN {
  * a level tag, a short local timestamp, and a clickable link to the file it was
  * called from; all arguments are then printed as-is.
  * @example
- * customLog("Auth", "user logged in")
+ * logger("Auth", "user logged in")
  * // [INFO] 05-30 04:00:00 PM (server.ts:42) Auth user logged in
  * @example
- * customLog.maxLines = 5 // long messages collapse to 5 lines; 0 = show all
+ * logger.maxLines = 5 // long messages collapse to 5 lines; 0 = show all
  */
 const logger = Object.assign(createLog("log", "[INFO]"), {
   error: createLog("error", "[ERROR]"),
   warn: createLog("warn", "[WARN]"),
-})
+}) as LogFN
 
 // `maxLines` is a live getter/setter backed by the shared collapse setting, so
 // setting it once affects info, error, and warn alike.
@@ -43,7 +43,7 @@ Object.defineProperty(logger, "maxLines", {
   configurable: true,
 })
 
-const customLog = logger as LogFN
+const customLog = logger
 
-export { customLog }
-export default customLog
+export { customLog, logger }
+export default logger
