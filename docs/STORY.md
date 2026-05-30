@@ -198,3 +198,20 @@ If you reach for a production logger with transports, structured output, and
 log levels — that's a different tool for a different job. This one is for the
 part of your day when you're in the terminal, moving fast, and you need to know
 what your code is doing right now.
+
+---
+
+## A note on how this was built
+
+The ideas, decisions, and direction in this package are mine. The pain point is
+real — I actually wrote that wrapper in every project.
+
+I used AI (Claude) as a development partner throughout the build. It wrote code,
+caught bugs, ran audits, and pushed back when a design was wrong. Every
+significant decision — what to cut, how to position it, what the zero-env rule
+meant, when to say no to a feature — was mine. The AI did not invent the product.
+It helped me build it faster and think through tradeoffs more rigorously than I
+would have alone.
+
+I think that is an honest way to build in 2026. The craft is in the decisions,
+not the keystrokes.
