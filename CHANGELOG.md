@@ -1,3 +1,9 @@
+## [1.8.2](https://github.com/meadown/meadown-logger/compare/v1.8.1...v1.8.2) (2026-05-30)
+
+### Bug Fixes
+
+* update permissions and enable NPM_CONFIG_PROVENANCE in release workflow ([e2ee1d7](https://github.com/meadown/meadown-logger/commit/e2ee1d7c1695739fa977178d8248d50f36bc8a32))
+
 ## [1.8.1](https://github.com/meadown/meadown-logger/compare/v1.8.0...v1.8.1) (2026-05-30)
 
 ### Bug Fixes
