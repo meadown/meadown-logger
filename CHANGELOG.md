@@ -1,3 +1,13 @@
+## [1.4.0](https://github.com/meadown/meadown-logger/compare/v1.3.1...v1.4.0) (2026-05-29)
+
+### Features
+
+* format logs with local time ([d22f958](https://github.com/meadown/meadown-logger/commit/d22f958d3f057aaf09b7c3b37f96d1c3e58de1a0))
+
+### Documentation
+
+* show local timestamp format ([d4c277a](https://github.com/meadown/meadown-logger/commit/d4c277a54e72ddfe87ceca961ef40b004e6cac5d))
+
 ## [1.3.1](https://github.com/meadown/meadown-logger/compare/v1.3.0...v1.3.1) (2026-05-29)
 
 ### Bug Fixes
