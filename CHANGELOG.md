@@ -1,3 +1,9 @@
+## [1.8.6](https://github.com/meadown/meadown-logger/compare/v1.8.5...v1.8.6) (2026-05-30)
+
+### Documentation
+
+* enhance security policy with details on build script and its removal before packaging ([41398e5](https://github.com/meadown/meadown-logger/commit/41398e5efff5a800b5aad9fc2053a1bd6dbef403))
+
 ## [1.8.5](https://github.com/meadown/meadown-logger/compare/v1.8.4...v1.8.5) (2026-05-30)
 
 ### Documentation
