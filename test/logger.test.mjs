@@ -26,7 +26,7 @@ test("logger exposes a callable plus .error and .warn", () => {
   assert.equal(typeof logger.warn, "function")
 })
 
-test("customLog remains an alias for logger", () => {
+test("deprecated customLog remains an alias for logger", () => {
   assert.equal(customLog, logger)
 })
 
