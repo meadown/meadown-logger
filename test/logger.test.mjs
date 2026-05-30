@@ -6,7 +6,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import logger, { customLog } from "../dist/index.js"
+import logger from "../dist/index.js"
 import { isLogAllowed } from "../dist/config.js"
 import { withEnv, capture } from "./helpers.mjs"
 
@@ -24,10 +24,6 @@ test("logger exposes a callable plus .error and .warn", () => {
   assert.equal(typeof logger, "function")
   assert.equal(typeof logger.error, "function")
   assert.equal(typeof logger.warn, "function")
-})
-
-test("deprecated customLog remains an alias for logger", () => {
-  assert.equal(customLog, logger)
 })
 
 test("logger writes to console.log with an [INFO] tag in development", () => {
