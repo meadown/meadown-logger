@@ -14,7 +14,11 @@ No dependencies. No config. Import it and you're done.
 ## Install
 
 ```bash
+pnpm add @meadown/logger
+# or
 npm install @meadown/logger
+# or
+yarn add @meadown/logger
 ```
 
 ## Using it
@@ -109,6 +113,14 @@ developing and go silent in production. The only thing that flips the switch is 
 
 So leave your logs in the code. Once you ship with `NODE_ENV=production`, they just
 quietly step aside.
+
+## Security
+
+It's a tiny, zero-dependency package with no file, network, or dynamic-code access.
+See [SECURITY.md](https://github.com/meadown/meadown-logger/blob/main/SECURITY.md)
+for the security model and how to report a vulnerability. One thing to know: like
+`console.log`, log arguments are written to the terminal as-is and are not
+sanitized — don't log untrusted data to a terminal you trust.
 
 ## License
 

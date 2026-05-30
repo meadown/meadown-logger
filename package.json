@@ -39,7 +39,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "SECURITY.md"
   ],
   "engines": {
     "node": ">=18"
