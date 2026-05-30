@@ -78,6 +78,22 @@ terminal, and when it's piped to a file or another program they quietly drop to
 plain `(server.ts:42)` text — so your log files never get cluttered with escape
 codes.
 
+## Trimming long messages
+
+By default you see everything you log, however long. But if a big object or a
+chatty multi-line message is drowning out your terminal, you can cap how many
+lines each message shows:
+
+```ts
+import customLog from "@meadown/logger"
+
+customLog.maxLines = 5 // show the first 5 lines, then "... N more lines"
+customLog.maxLines = 0 // back to the default — show everything
+```
+
+It only trims the _message_, never the tag, timestamp, or location, and the setting
+applies to `customLog`, `.error`, and `.warn` alike.
+
 ## What about production?
 
 Here's the nice part: you don't have to do anything. Logs show up while you're
