@@ -1,3 +1,14 @@
+## [1.7.0](https://github.com/meadown/meadown-logger/compare/v1.6.0...v1.7.0) (2026-05-30)
+
+### Features
+
+* remove customLog export ([f22d303](https://github.com/meadown/meadown-logger/commit/f22d303302b5b7a3c8fca74632aa56c327c7e0cb))
+
+### Documentation
+
+* remove customLog alias docs ([50ea408](https://github.com/meadown/meadown-logger/commit/50ea408a977e3e6050a78864ae125ef124a19105))
+* security file link updated in readme ([4fd9327](https://github.com/meadown/meadown-logger/commit/4fd93270c5bf27368dcc1ce4acd0ae7689fd5532))
+
 ## [1.6.0](https://github.com/meadown/meadown-logger/compare/v1.5.2...v1.6.0) (2026-05-30)
 
 ### Features
