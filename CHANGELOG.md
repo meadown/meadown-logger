@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/meadown/meadown-logger/compare/v1.5.0...v1.5.1) (2026-05-30)
+
+### Documentation
+
+* add pnpm/yarn install and security section ([87cb0b7](https://github.com/meadown/meadown-logger/commit/87cb0b78e9735af1fa2cf3ac48c3e2ae891791f8))
+* correct sample output to match tree layout ([6943c15](https://github.com/meadown/meadown-logger/commit/6943c15cef9401c4b766bac90c8335312ce14c9a))
+
 ## [1.5.0](https://github.com/meadown/meadown-logger/compare/v1.4.0...v1.5.0) (2026-05-30)
 
 ### Features
