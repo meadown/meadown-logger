@@ -1,3 +1,10 @@
+## [1.8.4](https://github.com/meadown/meadown-logger/compare/v1.8.3...v1.8.4) (2026-05-30)
+
+### Documentation
+
+* package purpose updated on story and readme and release rule add for docs ([db84b47](https://github.com/meadown/meadown-logger/commit/db84b47d16be05fcbd06d44b9b3cb83d6cd8ef43))
+* remove 'docs' release rule from semantic release configuration ([ee635f5](https://github.com/meadown/meadown-logger/commit/ee635f54a97b6cda1dfaec417007a4647c2e90a7))
+
 ## [1.8.3](https://github.com/meadown/meadown-logger/compare/v1.8.2...v1.8.3) (2026-05-30)
 
 ### Documentation
