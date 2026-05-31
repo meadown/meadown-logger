@@ -1,3 +1,17 @@
+## [1.8.11](https://github.com/meadown/meadown-logger/compare/v1.8.10...v1.8.11) (2026-05-31)
+
+### Bug Fixes
+
+* **tap-async:** update log tag from [TAP] to [ERROR] for rejected promises ([f054954](https://github.com/meadown/meadown-logger/commit/f054954196b59785f1cfbb2921adfb8e8fd171d0))
+
+### Refactoring
+
+* **logger:** update Logger interface and improve method documentation ([932db2b](https://github.com/meadown/meadown-logger/commit/932db2b0abe830a2bc2f6fd50fc62b386b442ed6))
+
+### Documentation
+
+* update DEV-JOURNAL with recent changes on URL handling and writeLog folder split ([4b03120](https://github.com/meadown/meadown-logger/commit/4b031209bab3dded32f7ca51af4714d35a7111e6))
+
 ## [1.8.10](https://github.com/meadown/meadown-logger/compare/v1.8.9...v1.8.10) (2026-05-31)
 
 ### Refactoring
