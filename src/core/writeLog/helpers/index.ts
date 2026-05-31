@@ -1,7 +1,7 @@
 /*
  * index.ts
  * Created by Dewan Mobashirul
- * Copyright (c) 2026 dewan-meadown
+ * Copyright (c) 2026 meadown
  * All rights reserved
  */
 

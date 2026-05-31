@@ -1,7 +1,7 @@
 /*
  * constants.ts
  * Created by Dewan Mobashirul
- * Copyright (c) 2026 dewan-meadown
+ * Copyright (c) 2026 meadown
  * All rights reserved
  *
  * Single home for the logger's layout/behavior constants, so the values that
