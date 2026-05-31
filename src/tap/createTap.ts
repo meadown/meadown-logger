@@ -5,10 +5,10 @@
  * All rights reserved
  */
 
+import { isLogAllowed } from "../config.js"
 import getCaller from "../caller/getCaller.js"
 import { writeLog } from "../core/writeLog/index.js"
-import { isLogAllowed } from "../config.js"
-import { isThenable, tapAsync } from "./tapAsync.js"
+import { isThenable, tapAsync } from "./tapAsync/index.js"
 
 /** Logs a value and returns it unchanged. Promises route to the timed path. */
 export interface Tap {
