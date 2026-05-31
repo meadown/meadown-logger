@@ -27,7 +27,7 @@ export const SEPARATOR = "-" // between the timestamp and the location
 
 /** Hang-indent for message continuation lines, so they align under the message
  * text (the `├── ` branch is 4 columns wide). */
-export const MESSAGE_INDENT = "|\t"
+export const MESSAGE_INDENT = "│   "
 
 /** Default for the collapse setting: 0 = show every line. */
 export const DEFAULT_MAX_LINES = 0
