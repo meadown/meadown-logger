@@ -379,6 +379,55 @@ and need to know what your code is doing right now.
 
 ---
 
+## 19. Second `:line` URL attempt — reverted again (v1.8.9)
+
+**Attempted:** Append `:line` to the `file://` URL so supporting terminals
+(VS Code, iTerm2, WezTerm) jump straight to the exact line, not just open the
+file.
+
+**Implementation:** `fileUrl(file, line?)` — optional second argument. When
+provided, returns `${base}:${line}`. `writeLog` passed `caller.line` through.
+Released as v1.8.9 (`fix(clickable-source-link): jump straight to the exact
+line in the file`).
+
+**What happened:** Line navigation failed again. The `:line` suffix either
+broke file openers that don't expect it or didn't trigger the jump as intended.
+
+**Decision:** Reverted. `fileUrl` is back to a single `file` argument. The
+line number stays visible only in the display text, not encoded in the URL.
+This is the same conclusion reached in entry 11 — the rule held.
+
+**Rule reconfirmed:** `file://` URLs must not have a `:line` suffix. File
+openers that don't understand it (GNOME/`gio`, others) treat it as a literal
+filename component. There is no safe universal format for deep-linking to a
+line via `file://`.
+
+---
+
+## 20. `writeLog` folder split
+
+**Asked:** Split `src/core/writeLog.ts` into a folder.
+
+**Designed:**
+
+```text
+src/core/writeLog/
+  index.ts          writeLog() + re-exports getVisibleLines/setVisibleLines
+  visibleLines.ts   shared collapse state + get/set API
+  renderMessage.ts  collapse() (internal) + renderMessage()
+  formatLocation.ts formatLocation() — caller → OSC-8 link or plain label
+```
+
+**Why:** The file held four distinct responsibilities. Splitting makes each
+concern independently readable without introducing any new abstractions — the
+public API is identical.
+
+**Module resolution note:** `moduleResolution: node16` requires explicit `.js`
+extensions. Moving to a folder means `./writeLog.js` no longer resolves to
+`./writeLog/index.js`. All four consumers updated to `./writeLog/index.js`.
+
+---
+
 ## 17. Key rules that held throughout
 
 These came up repeatedly and shaped every decision:
