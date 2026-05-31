@@ -40,10 +40,9 @@ export default function getCaller(): Caller {
   // Split off the trailing `:line:column`, keeping the (possibly colon-bearing)
   // path intact (e.g. Windows `C:\…` or `file://…`).
   const match = inner.match(/^(.*):(\d+):\d+$/)
-  const file = match?.[1]
-  if (file === undefined) return UNKNOWN
-
-  const line = Number(match?.[2])
+  if (match === null) return UNKNOWN
+  const file = match[1] ?? ""
+  const line = Number(match[2])
   const base = file.split(/[/\\]/).pop() ?? ""
   if (!SOURCE_FILE.test(base)) return UNKNOWN
 
