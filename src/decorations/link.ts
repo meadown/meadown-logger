@@ -7,14 +7,9 @@
 
 import { pathToFileURL } from "node:url"
 
-/**
- * Builds a `file://` URL for a path so terminals can open it on click.
- * When `line` is provided, appends `:line` so supporting terminals (VS Code,
- * iTerm2, WezTerm) jump straight to that line.
- */
-export function fileUrl(file: string, line?: number): string {
-  const base = file.startsWith("file://") ? file : pathToFileURL(file).href
-  return line != null ? `${base}:${line}` : base
+/** Builds a `file://` URL for a path so terminals can open it on click. */
+export function fileUrl(file: string): string {
+  return file.startsWith("file://") ? file : pathToFileURL(file).href
 }
 
 /**
