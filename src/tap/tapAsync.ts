@@ -214,7 +214,7 @@ export function tapAsync(
       const ms = Math.round(performance.now() - start)
       const elapsed = formatDuration(ms, useColor)
       writeLog({
-        channel: "error", tag: "[TAP]",
+        channel: "error", tag: "[ERROR]",
         args: [label === undefined ? `rejected after ${elapsed}` : `${label} rejected after ${elapsed}`, err],
         caller,
       })
