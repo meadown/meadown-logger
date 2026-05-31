@@ -12,7 +12,7 @@
 import { performance } from "node:perf_hooks"
 import { formatWithOptions } from "node:util"
 
-import { writeLog } from "../core/writeLog.js"
+import { writeLog } from "../core/writeLog/index.js"
 import { colorize, type Color } from "../colors/color.js"
 import { isTTY } from "../terminal/isTTY.js"
 import { type Caller } from "../caller/getCaller.js"

@@ -6,7 +6,7 @@
  */
 
 import getCaller from "../caller/getCaller.js"
-import { writeLog } from "./writeLog.js"
+import { writeLog } from "./writeLog/index.js"
 import { type LogChannel } from "../constants.js"
 import { isLogAllowed } from "../config.js"
 

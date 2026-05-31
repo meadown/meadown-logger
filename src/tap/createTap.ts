@@ -6,7 +6,7 @@
  */
 
 import getCaller from "../caller/getCaller.js"
-import { writeLog } from "../core/writeLog.js"
+import { writeLog } from "../core/writeLog/index.js"
 import { isLogAllowed } from "../config.js"
 import { isThenable, tapAsync } from "./tapAsync.js"
 

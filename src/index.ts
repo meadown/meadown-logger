@@ -7,7 +7,7 @@
 
 import createLog from "./core/createLog.js"
 import createTap from "./tap/createTap.js"
-import { getVisibleLines, setVisibleLines } from "./core/writeLog.js"
+import { getVisibleLines, setVisibleLines } from "./core/writeLog/index.js"
 
 /** The logger: a callable for info logs, plus `.error`, `.warn`, and `.tap`. */
 export interface LogFN {
