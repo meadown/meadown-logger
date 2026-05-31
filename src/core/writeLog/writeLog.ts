@@ -5,18 +5,9 @@
  * All rights reserved
  */
 
-import {
-  type LogChannel,
-  TAG_COLOR,
-  BRANCH,
-  BRANCH_END,
-  SEPARATOR,
-} from "../../constants.js"
-import { isTTY } from "../../terminal/isTTY.js"
-import getTimeStamp from "../../time/getTimeStamp.js"
+import { type LogChannel, TAG_COLOR } from "../../constants.js"
 import { type Caller } from "../../caller/getCaller.js"
-import { colorize, type Color } from "../../colors/color.js"
-import { renderMessage, formatLocation } from "./helpers/index.js"
+import { renderMessage, buildContext } from "./helpers/index.js"
 
 /**
  * Renders and writes one log entry. The `caller` is resolved by the *caller* of
@@ -31,24 +22,18 @@ export function writeLog(opts: {
   caller: Caller
 }): void {
   const { channel, tag, args, caller } = opts
-  const streamName = channel === "log" ? "stdout" : "stderr"
-
-  // One terminal check drives both color and clickable links — `isTTY` is the
-  // single source of truth (DRY). Off when output is piped/redirected.
-  const useColor = isTTY(streamName)
-  const paint = (s: string, c: Color): string => (useColor ? colorize(s, c) : s)
-  const location = formatLocation(caller, useColor)
+  const {
+    useColor,
+    paint,
+    timeStamp,
+    locOut,
+    connector,
+    connectorEnd,
+    separator,
+  } = buildContext(channel, caller)
 
   const tagOut = paint(tag, TAG_COLOR[channel])
-  const timeStamp = paint(getTimeStamp(), "teal")
-  const locOut = paint(`(${location})`, "dimTeal")
-  const connector = paint(BRANCH, "gray")
-  const connectorBottom = paint(BRANCH_END, "gray")
-  const separator = paint(SEPARATOR, "gray")
-
-  // Layout: the tag, the message hanging off a `├──` branch, then the timestamp
-  // and location on a `└──` branch below. Leading `\n` spaces entries apart.
   const message = renderMessage(args, useColor)
-  const meta = `\n${connectorBottom} ${timeStamp} ${separator} ${locOut}`
-  console[channel](`\n${tagOut}`, `\n${connector}`, message, meta)
+  const meta = `\n${connectorEnd} ${timeStamp} ${separator} ${locOut}`
+  console[channel](`\n${tagOut} \n${connector} ${message}${meta}`)
 }

@@ -35,8 +35,9 @@ function collapse(text: string, useColor: boolean): string {
  */
 export function renderMessage(args: unknown[], useColor: boolean): string {
   const text = formatWithOptions({ colors: useColor }, ...args)
+  const indent = useColor ? colorize(MESSAGE_INDENT, "gray") : MESSAGE_INDENT
   return collapse(
-    text.replace(/\n/g, `\n${colorize(MESSAGE_INDENT, "gray")}`),
+    text.replace(/\n/g, `\n${indent}`),
     useColor,
   )
 }

@@ -7,6 +7,7 @@
 
 import createLog from "./core/createLog.js"
 import createTap from "./tap/createTap.js"
+import createGroup, { type Group } from "./group/createGroup.js"
 import { getVisibleLines, setVisibleLines } from "./core/writeLog/index.js"
 
 /** Type of the logger — use this to annotate variables or parameters that accept it. */
@@ -38,6 +39,20 @@ export interface Logger {
    * @param label  Optional label shown next to the value in the log line.
    */
   tap<T>(value: T, label?: string): T
+  /**
+   * Log multiple related items as one block under a shared name and single
+   * timestamp. Each item in `logs` renders on its own `├──` branch — any value
+   * is accepted (string, object, function, Promise, …).
+   *
+   * `type` sets the channel and tag color: `"info"` (default), `"warn"`, `"error"`.
+   *
+   * @example
+   * ```ts
+   * logger.group({ name: "Server setup", logs: [`port: ${port}`, `env: ${env}`] })
+   * logger.group({ name: "Validation failed", type: "error", logs: ["email invalid"] })
+   * ```
+   */
+  group: Group
   /**
    * How many lines to show before the rest collapses into a
    * `… N more lines` summary. `0` (default) shows everything.
@@ -72,6 +87,7 @@ const logger = Object.assign(createLog("log", "[INFO]"), {
   error: createLog("error", "[ERROR]"),
   warn: createLog("warn", "[WARN]"),
   tap: createTap(),
+  group: createGroup(),
 }) as Logger
 
 // `maxLines` is a live getter/setter backed by the shared collapse setting, so

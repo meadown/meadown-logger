@@ -12,3 +12,4 @@ export {
 } from "./visibleLines.js"
 export { renderMessage } from "./renderMessage.js"
 export { formatLocation } from "./formatLocation.js"
+export { buildContext } from "./buildContext.js"
