@@ -1,3 +1,9 @@
+## [1.8.9](https://github.com/meadown/meadown-logger/compare/v1.8.8...v1.8.9) (2026-05-31)
+
+### Bug Fixes
+
+* **clickable-source-link:** jump straight to the exact line in the file ([e754e44](https://github.com/meadown/meadown-logger/commit/e754e44f8172ef71d26f2847054f9324732b6c7c))
+
 ## [1.8.8](https://github.com/meadown/meadown-logger/compare/v1.8.7...v1.8.8) (2026-05-31)
 
 ### Documentation
