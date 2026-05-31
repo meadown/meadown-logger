@@ -30,11 +30,11 @@ tells you where things came from and disappears when you ship.
 
 - **Zero dependencies**
 - **Development-focused** — built for the dev experience, not production ops
-- **Clickable source link** — every log is a clickable link that jumps to the exact file and line it came from
-- **Tap logging** — log any value or promise inline; fetch calls also get timing, status, size, and body
+- **Clickable source link** — every log jumps straight to the file and line it came from
+- **Tap logging** — log any value or promise inline without breaking the expression
 - **Color-coded levels** — `[INFO]` cyan, `[WARN]` yellow, `[ERROR]` red
-- **Tree layout output** — clean, scannable structure in your terminal
-- **Collapsible messages** — cap long output with `logger.maxLines`
+- **Tree layout** — clean, scannable structure in your terminal
+- **Collapsible output** — cap long dumps with `logger.maxLines`
 
 ## Install
 
@@ -46,33 +46,27 @@ npm install @meadown/logger
 yarn add @meadown/logger
 ```
 
-## Using it
-
-Set `NODE_ENV=production` and all output is suppressed. Anything else and
-logging is on. No config files, no init call, no options object.
+## Quick start
 
 ```ts
 import logger from "@meadown/logger"
 
-logger("Hello world")
-logger("Auth", "user logged in")
-
-logger.warn("This is deprecated")
-logger.error("Something went wrong")
+logger("server started", { port: 3000 })
 ```
 
 ```text
 [INFO]
-├── Auth user logged in
-└── 05-30 04:00:00 PM - (server.ts:42)
+├── server started { port: 3000 }
+└── 05-30 04:00:00 PM - (server.ts:5)
 ```
 
-### Recommended: single shared import
+Works out of the box. Set `NODE_ENV=production` when you ship and the logs
+disappear — no wrappers, no cleanup, nothing to remember.
 
-Rather than importing directly from `@meadown/logger` in every file, create
-one shared module in your project and re-export from there. This gives you a
-single place to set options like `maxLines` and keeps any future changes to
-one file.
+### Single shared import
+
+Create one module in your project and re-export from there. One place to set
+options, one place to change if you ever need to.
 
 ```ts
 // lib/logger.ts
@@ -88,8 +82,8 @@ export default logger
 import logger from "@/lib/logger"
 ```
 
-When re-exporting, use a direct re-export, Not a wrapper function. A wrapper
-breaks the caller location shown in every log line.
+Use a direct re-export — not a wrapper function. A wrapper breaks the
+`(file:line)` link on every log.
 
 ```ts
 // GOOD — location stays honest
@@ -99,10 +93,62 @@ export { default as logger } from "@meadown/logger"
 export const logger = (...args) => log(...args)
 ```
 
-## API response logging
+## API
 
-Drop `tap` into any `await` chain. You get timing, status, size, and the
-actual response body. The promise flows through untouched. One line of code.
+```text
+┌─────────────────┬─────────────┬──────────────────────────┬───────────────────────────┐
+│     Method      │     Tag     │          Params          │          Purpose          │
+├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
+│ logger()        │ [INFO]      │ ...args: unknown[]       │ general info              │
+├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
+│ logger.warn()   │ [WARN]      │ ...args: unknown[]       │ something needs attention │
+├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
+│ logger.error()  │ [ERROR]     │ ...args: unknown[]       │ something broke           │
+├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
+│ logger.tap()    │ [TAP]       │ value: T, label?: string │ log value, returns as-is  │
+├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
+│ logger.group()  │ [name]      │ { name: string,          │ consolidate related       │
+│                 │             │   type?: LogChannel,     │ items under a label       │
+│                 │             │   logs: unknown[] }      │                           │
+├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
+│ logger.maxLines │ —           │ number                   │ cap output at N lines     │
+└─────────────────┴─────────────┴──────────────────────────┴───────────────────────────┘
+```
+
+Every tag is self-describing. You scan the logs and immediately know what each
+entry is without reading the message. That's the design principle holding the
+whole API together.
+
+### `logger()`
+
+Your everyday log. Pass it anything — strings, objects, errors, whatever.
+Works exactly like `console.log`, just prettier.
+
+```ts
+logger("server started")
+logger("user logged in", { userId: 42, role: "admin" })
+```
+
+```text
+[INFO]
+├── user logged in { userId: 42, role: 'admin' }
+└── 05-30 04:00:00 PM - (server.ts:12)
+```
+
+### `logger.tap()`
+
+The one you reach for when you want to see what's inside something without
+stopping to assign it to a variable first. Logs it and gives it straight back.
+
+```ts
+const port = logger.tap(5000, "port")
+server.listen(logger.tap(port, "port"))
+```
+
+#### API response logging
+
+Drop it into any `await` and you get timing, status, size, and the response
+body — without touching your code at all.
 
 ```ts
 const user = await logger.tap(
@@ -129,15 +175,14 @@ const user = await logger.tap(
 └── 05-30 07:54:26 PM - (api.ts:12)
 ```
 
-You can immediately see: was it successful? How long did it take? What came
-back? Without opening DevTools.
+Was it successful? How long did it take? What came back? All there, without
+opening DevTools.
 
 ![API response logging: tap a fetch and see timing, status, size, and body](media/tap-api-demo.png)
 
-### Tap any value
+#### Tap any value
 
-`tap` works on anything, not just fetch. Pass in any value or expression and
-get it back exactly as it was. The only thing that happens is a log.
+Not just fetch. Any value, any expression. Logged and returned as-is.
 
 ```ts
 // numbers, strings, objects — logged and returned as-is
@@ -147,7 +192,7 @@ logger.tap(config, "loaded config")
 ```
 
 ```ts
-// async functions — promise flows through, timing logged when it settles
+// promises — flows through, timing logged when it settles
 const user = await logger.tap(getUser(), "getUser")
 const config = await logger.tap(loadConfig(), "loadConfig")
 ```
@@ -157,43 +202,96 @@ const config = await logger.tap(loadConfig(), "loadConfig")
 server.listen(logger.tap(port, "port"))
 ```
 
-If it's a promise, `tap` logs elapsed time once it settles. If it resolves
-to a `Response` (any fetch like call), you also get status and size, same
-as the fetch example above.
+If it's a promise, timing is logged once it settles. If it resolves to a
+`Response`, you also get status and size.
 
-## Clickable source link
+### `logger.group()`
 
-That `(server.ts:42)` is a **clickable link**. Click it and your editor opens the file and jumps straight to that line. Works in VS Code, iTerm2, WezTerm, Kitty, and Windows Terminal. Degrades to plain text everywhere else.
+Got a handful of related things to log at once? Group them. One block, one
+timestamp, one place to look.
 
-## Color-coded levels
-
-`[INFO]` , `[TAP]` cyan · `[WARN]` yellow · `[ERROR]` red. Timestamp and location tinted teal.
-Auto-disabled when output is piped no escape codes in your log files.
-
-## Tree layout output
-
-```text
-[INFO]
-├── Auth user logged in
-└── 05-30 04:00:00 PM - (server.ts:42)
+```ts
+logger.group({
+  name: "Server setup",
+  logs: [
+    `Running on port ${port}`,
+    `Environment: ${env}`,
+    `API: http://localhost:${port}/api`,
+  ],
+})
 ```
 
-Level tag, message, timestamp, and location all in a clean tree. Easy to scan,
-even in a busy terminal.
+```text
+[SERVER SETUP]
+├── Running on port 5000
+├── Environment: development
+├── API: http://localhost:5000/api
+└── 05-30 04:00:00 PM - (server.ts:23)
+```
 
-## Collapsible messages
+Use `type` to set the channel and tag color. Defaults to `"log"` (cyan, stdout).
+
+```ts
+logger.group({
+  name: "Validation failed",
+  type: "error", // red, stderr
+  logs: ["email invalid", "password too short"],
+})
+
+logger.group({
+  name: "Config warnings",
+  type: "warn", // yellow, stderr
+  logs: ["deprecated key found", "missing optional field"],
+})
+```
+
+`logs` takes anything — strings, objects, arrays, errors. Each renders exactly
+as `console.log` would.
+
+### `logger.error()`
+
+Red tag, goes to `stderr`. Pass an `Error` and you get the stack too.
+
+```ts
+logger.error("database connection failed", new Error("ECONNREFUSED"))
+```
+
+```text
+[ERROR]
+├── database connection failed Error: ECONNREFUSED
+│       at Object.<anonymous> (server.ts:14:18)
+└── 05-30 04:00:00 PM - (server.ts:14)
+```
+
+### `logger.warn()`
+
+Yellow tag, `stderr`. For the things that aren't broken yet.
+
+```ts
+logger.warn("disk usage above 80%")
+logger.warn("deprecated config key", { key: "timeout", use: "timeoutMs" })
+```
+
+```text
+[WARN]
+├── disk usage above 80%
+└── 05-30 04:00:00 PM - (monitor.ts:8)
+```
+
+### `logger.maxLines`
+
+Got a massive object dumping 200 lines? Set this and it cuts off after N lines
+with a count of what's hidden. Set back to `0` to show everything again.
 
 ```ts
 logger.maxLines = 5 // show 5 lines, then "... N more lines"
 logger.maxLines = 0 // default — show everything
 ```
 
-## NODE_ENV
+## Production
 
-You shouldn't have to think about whether your logs will leak into production.
-This package reads `NODE_ENV` and handles it for you. Set it to `production`
-and all output is handled for you. You never have to remember to wrap a log call,
-remove a debug line, or grep the codebase before a release.
+Set `NODE_ENV=production` and everything goes silent. No wrapper calls, no
+grep before release, no accidental logs in prod.
 
 | `NODE_ENV`                               | Logs?      |
 | ---------------------------------------- | ---------- |

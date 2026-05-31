@@ -31,6 +31,8 @@ The core experience is done:
   unchanged. Works on plain values and on fetch promises.
 - **API response logging.** Tap a fetch and see timing, status, size, and the
   actual response body. Without opening DevTools.
+- **`logger.group()`** Collapse multiple related items into one named block with
+  a single timestamp. Supports `"log"`, `"warn"`, and `"error"` channels.
 - **`maxLines`.** Cap long output so a 100-item array doesn't bury your terminal.
 - **Dual ESM + CJS.** Works with `import` and `require` without config.
 
@@ -156,3 +158,9 @@ know what your code is doing right now.
 Every time something was added that felt like config, it was removed. The zero-config
 identity is non-negotiable. If a feature requires the developer to set an env var
 or write a config file, it doesn't ship.
+
+---
+
+Architected and developed by [Dewan Mobashirul](https://linkedin.com/in/dewan-meadown)
+
+MIT © [meadown](https://github.com/meadown)

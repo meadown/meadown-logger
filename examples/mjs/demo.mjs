@@ -41,3 +41,40 @@ arrowFunction()
 // tap logs a value and returns it, so it drops into any expression.
 const port = logger.tap(5000, "port") // logs it, `port` is still 5000
 logger("using port", port)
+
+// group collapses related items into one block with a shared name and timestamp.
+// logs accepts any value — string, object, function, Promise, …
+logger.group({
+  name: "Server setup",
+  logs: [
+    `Server running on port ${port}`,
+    "Environment: development",
+    `API: http://localhost:${port}/api`,
+    `Health: http://localhost:${port}/`,
+  ],
+})
+
+// type controls the channel and tag color.
+logger.group({
+  name: "Validation failed",
+  type: "error",
+  logs: ["email invalid", "password too short"],
+})
+
+logger.group({
+  name: "Config warnings",
+  type: "warn",
+  logs: ["deprecated key found", { key: "objects work too" }],
+})
+
+// logs accepts any value — functions render as [Function: name], Promises as Promise { <pending> }.
+logger.group({
+  name: "Mixed types",
+  logs: [
+    "plain string",
+    { status: "ok", uptime: 99.9 },
+    arrowFunction,
+    Promise.resolve("data"),
+  ],
+})
+

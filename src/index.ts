@@ -1,13 +1,19 @@
 /*
  * index.ts
  * Created by Dewan Mobashirul
- * Copyright (c) 2026 dewan-meadown
+ * Copyright (c) 2026 meadown
  * All rights reserved
  */
 
-import createLog from "./core/createLog.js"
-import createTap from "./tap/createTap.js"
-import { getVisibleLines, setVisibleLines } from "./core/writeLog/index.js"
+import {
+  getVisibleLines,
+  setVisibleLines,
+} from "./features/logger-max-lines/index.js"
+import logInfo from "./features/logger/index.js"
+import logWarn from "./features/logger-warn/index.js"
+import logError from "./features/logger-error/index.js"
+import tap, { type Tap } from "./features/logger-tap/index.js"
+import group, { type Group } from "./features/logger-group/index.js"
 
 /** Type of the logger — use this to annotate variables or parameters that accept it. */
 export interface Logger {
@@ -37,7 +43,21 @@ export interface Logger {
    * @param value  Any value or promise — always returned as-is.
    * @param label  Optional label shown next to the value in the log line.
    */
-  tap<T>(value: T, label?: string): T
+  tap: Tap
+  /**
+   * Log multiple related items as one block under a shared name and single
+   * timestamp. Each item in `logs` renders on its own `├──` branch — any value
+   * is accepted (string, object, function, Promise, …).
+   *
+   * `type` sets the channel and tag color: `"info"` (default), `"warn"`, `"error"`.
+   *
+   * @example
+   * ```ts
+   * logger.group({ name: "Server setup", logs: [`port: ${port}`, `env: ${env}`] })
+   * logger.group({ name: "Validation failed", type: "error", logs: ["email invalid"] })
+   * ```
+   */
+  group: Group
   /**
    * How many lines to show before the rest collapses into a
    * `… N more lines` summary. `0` (default) shows everything.
@@ -68,10 +88,11 @@ export interface Logger {
  * const res  = await logger.tap(fetch(url), "GET /users")
  * ```
  */
-const logger = Object.assign(createLog("log", "[INFO]"), {
-  error: createLog("error", "[ERROR]"),
-  warn: createLog("warn", "[WARN]"),
-  tap: createTap(),
+const logger = Object.assign(logInfo, {
+  error: logError,
+  warn: logWarn,
+  tap,
+  group,
 }) as Logger
 
 // `maxLines` is a live getter/setter backed by the shared collapse setting, so

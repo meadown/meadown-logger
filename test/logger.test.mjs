@@ -7,7 +7,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 
 import logger from "../dist/index.js"
-import { isLogAllowed } from "../dist/config.js"
+import { isLogAllowed } from "../dist/config/index.js"
 import { withEnv, capture } from "./helpers.mjs"
 
 test("isLogAllowed is true outside production", () => {
@@ -20,10 +20,11 @@ test("isLogAllowed is false in production", () => {
   withEnv("production", () => assert.equal(isLogAllowed(), false))
 })
 
-test("logger exposes a callable plus .error and .warn", () => {
+test("logger exposes a callable plus .error, .warn, and .group", () => {
   assert.equal(typeof logger, "function")
   assert.equal(typeof logger.error, "function")
   assert.equal(typeof logger.warn, "function")
+  assert.equal(typeof logger.group, "function")
 })
 
 test("logger writes to console.log with an [INFO] tag in development", () => {
@@ -56,6 +57,19 @@ test("logger.warn writes to console.warn with a [WARN] tag", () => {
   const line = calls[0].join(" ")
   assert.ok(line.includes("[WARN]"))
   assert.ok(line.includes("deprecated call"))
+})
+
+test("logger.group writes grouped items with the group name", () => {
+  const calls = withEnv("development", () =>
+    capture("log", () =>
+      logger.group({ name: "Server setup", logs: ["port 5000", "ready"] }),
+    ),
+  )
+  assert.equal(calls.length, 1)
+  const line = calls[0].join(" ")
+  assert.ok(line.includes("[SERVER SETUP]"))
+  assert.ok(line.includes("port 5000"))
+  assert.ok(line.includes("ready"))
 })
 
 test("every line includes a short MM-DD 12-hour timestamp", () => {
@@ -91,7 +105,7 @@ test("the console method is resolved at call time (reassignment is honored)", ()
     console.log = original
   }
   assert.equal(seen.length, 1)
-  assert.ok(seen[0].includes("late-bound"))
+  assert.ok(seen[0].join(" ").includes("late-bound"))
 })
 
 test("the caller location points back at the calling file", () => {

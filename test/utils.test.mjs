@@ -6,11 +6,11 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import getTimeStamp from "../dist/time/getTimeStamp.js"
-import getCaller from "../dist/caller/getCaller.js"
-import { fileUrl, hyperlink } from "../dist/decorations/link.js"
-import { colorize } from "../dist/colors/color.js"
-import { isTTY } from "../dist/terminal/isTTY.js"
+import getTimeStamp from "../dist/domain/time/getTimeStamp.js"
+import getCaller from "../dist/domain/caller/getCaller.js"
+import { fileUrl, hyperlink } from "../dist/domain/decorations/link.js"
+import { colorize } from "../dist/domain/colors/color.js"
+import { isTTY } from "../dist/domain/terminal/isTTY.js"
 
 test("getTimeStamp returns a short MM-DD 12-hour timestamp", () => {
   const stamp = getTimeStamp(new Date("2026-05-30T10:00:00.000Z"))
