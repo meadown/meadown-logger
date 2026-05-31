@@ -1,3 +1,10 @@
+## [1.8.10](https://github.com/meadown/meadown-logger/compare/v1.8.9...v1.8.10) (2026-05-31)
+
+### Refactoring
+
+* **file-url:** simplify function by removing line parameter ([6976a83](https://github.com/meadown/meadown-logger/commit/6976a8380f2c3f8588b9b6e32560e6d2c1224074))
+* **write-log:** restructure module by creating index file and organizing imports ([8280477](https://github.com/meadown/meadown-logger/commit/828047744193ea9f9c45f544ecce85c092b012fa))
+
 ## [1.8.9](https://github.com/meadown/meadown-logger/compare/v1.8.8...v1.8.9) (2026-05-31)
 
 ### Bug Fixes
