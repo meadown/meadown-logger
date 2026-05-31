@@ -167,7 +167,7 @@ to the tag and branch connector.
 
 **Asked:** Output format should be like:
 
-```
+```text
 [INFO] 2026-05-29T22:05:59 (server.ts:24)
   Environment: development
 ```
@@ -184,7 +184,7 @@ entry always wrote to `stdout`, even for `error`/`warn` which write to
 
 **Final layout:**
 
-```
+```text
 [INFO]
 ├── message here
 └── 05-30 04:00:00 PM - (server.ts:42)
@@ -255,7 +255,7 @@ the location points at the user's code even across `await`.
 
 **Internal structure:**
 
-```
+```text
 tap/
   createTap.ts   the public `tap`; resolves caller; routes to tapAsync or sync writeLog
   tapAsync.ts    the async path; timing, status, body, rejection logging
@@ -311,7 +311,7 @@ of buffering the whole thing.
 
 **Designed:**
 
-```
+```text
 src/
   core/         createLog, writeLog (the pipeline)
   tap/          createTap, tapAsync
@@ -354,7 +354,7 @@ feature folder.
 
 - Source maps (`22 .map` files) were shipping in the tarball. Removed by
   setting `sourceMap: false` in `tsconfig.json`.
-- `MESSAGE_INDENT` was 3 spaces but `├── ` is 4 columns wide. Off by one.
+- `MESSAGE_INDENT` was 3 spaces but `├──` is 4 columns wide. Off by one.
   Fixed in `constants.ts`.
 - Plain-mode tree used `└──` for the message branch instead of `├──`. Fixed.
 

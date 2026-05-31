@@ -1,13 +1,13 @@
-# Roadmap — @meadown/logger
+# Roadmap: @meadown/logger
 
 > Where the package is, where it's going, and why.
-> This is a living document — priorities shift based on what developers actually find useful.
+> This is a living document. Priorities shift based on what developers actually find useful.
 
 ---
 
 ## What it is
 
-A development logger. Not a production ops tool — a logger that makes your
+A development logger. Not a production ops tool, just a logger that makes your
 terminal useful while you're writing code. Zero dependencies, one import, and
 it tells you exactly where every log came from.
 
@@ -21,18 +21,18 @@ writing config.**
 
 The core experience is done:
 
-- **Zero dependencies** — nothing installs with it, ever.
-- **Clickable source links** — every log line is a clickable link that opens
+- **Zero dependencies.** Nothing installs with it, ever.
+- **Clickable source links.** Every log line is a clickable link that opens
   the source file. The line number is always visible in the label.
-- **Color-coded levels** — `[INFO]` deep cyan, `[WARN]` yellow, `[ERROR]` red.
+- **Color-coded levels.** `[INFO]` deep cyan, `[WARN]` yellow, `[ERROR]` red.
   Degrades gracefully to plain text when piped.
-- **Tree layout** — clean, scannable output with a consistent structure.
-- **`logger.tap()`** — drop it into any expression, log the value, get it back
+- **Tree layout.** Clean, scannable output with a consistent structure.
+- **`logger.tap()`** Drop it into any expression, log the value, get it back
   unchanged. Works on plain values and on fetch promises.
-- **API response logging** — tap a fetch and see timing, status, size, and the
+- **API response logging.** Tap a fetch and see timing, status, size, and the
   actual response body. Without opening DevTools.
-- **`maxLines`** — cap long output so a 100-item array doesn't bury your terminal.
-- **Dual ESM + CJS** — works with `import` and `require` without config.
+- **`maxLines`.** Cap long output so a 100-item array doesn't bury your terminal.
+- **Dual ESM + CJS.** Works with `import` and `require` without config.
 
 ---
 
@@ -49,7 +49,7 @@ const user = await logger.tap(
 
 Output in your terminal:
 
-```
+```text
 [TAP]
 ├── GET /users/1
 │
@@ -71,13 +71,13 @@ take? What came back? Without touching DevTools.
 
 ---
 
-## Phase 1 — shipped ✅
+## Phase 1: shipped ✅
 
 ### Pretty status badges
 
 Status codes are colored by outcome:
 
-```
+```text
 200 OK           green
 201 Created      green
 304              cyan
@@ -89,34 +89,34 @@ Status codes are colored by outcome:
 
 Time is colored automatically:
 
-```
-65ms    →  green   (fast)
-1.2s    →  yellow  (slow)
-5.8s    →  red     (very slow)
+```text
+65ms    green   (fast)
+1.2s    yellow  (slow)
+5.8s    red     (very slow)
 ```
 
 No threshold to configure.
 
 ---
 
-## Phase 2 — deeper response detail
+## Phase 2: deeper response detail
 
 Once Phase 1 is solid and shipped, the next layer:
 
-- **Request size** — how big was what you sent? (Requires wrapping the fetch,
+- **Request size.** How big was what you sent? (Requires wrapping the fetch,
   not just tapping the response.)
-- **Expanded body display** — key-by-key layout for JSON objects, cleaner than
+- **Expanded body display.** Key-by-key layout for JSON objects, cleaner than
   the current inspect output.
-- **Response header inspection** — surface content-type, cache-control, and
+- **Response header inspection.** Surface content-type, cache-control, and
   other useful headers.
 
 ---
 
-## Phase 3 — network timing breakdown
+## Phase 3: network timing breakdown
 
 The full browser-network-panel experience:
 
-```
+```text
 Prepare         10ms
 DNS Lookup      56ms
 TCP Handshake    9ms
@@ -125,7 +125,7 @@ Waiting (TTFB)  2.7s
 Download         3ms
 ```
 
-This requires intercepting at the Node HTTP client level — not just reading
+This requires intercepting at the Node HTTP client level, not just reading
 the `Response` object. The plan is an opt-in `logger.tapFetch(() => fetch(...))`
 wrapper that hooks into undici's diagnostic channels for the per-phase timings.
 
@@ -144,7 +144,7 @@ This is a **development** logger. It's not:
 - A logger with configurable levels, filters, or sampling.
 
 Those are legitimate tools for different jobs. A production logger built on
-this foundation is a future direction — different product, different constraints.
+this foundation is a future direction, different product, different constraints.
 
 This one is for the hours you spend in the terminal, moving fast, needing to
 know what your code is doing right now.
