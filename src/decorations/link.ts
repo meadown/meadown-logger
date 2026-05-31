@@ -8,14 +8,13 @@
 import { pathToFileURL } from "node:url"
 
 /**
- * Builds a valid `file://` URL for a path so terminals can open it on click.
- * Paths already in `file://` form are used as-is. We intentionally do NOT append
- * `:line` — that isn't a valid URI and breaks file openers (e.g. GNOME/`gio`,
- * which would look for a file literally named `foo.ts:42`). The line number
- * stays visible in the link's display text instead.
+ * Builds a `file://` URL for a path so terminals can open it on click.
+ * When `line` is provided, appends `:line` so supporting terminals (VS Code,
+ * iTerm2, WezTerm) jump straight to that line.
  */
-export function fileUrl(file: string): string {
-  return file.startsWith("file://") ? file : pathToFileURL(file).href
+export function fileUrl(file: string, line?: number): string {
+  const base = file.startsWith("file://") ? file : pathToFileURL(file).href
+  return line != null ? `${base}:${line}` : base
 }
 
 /**

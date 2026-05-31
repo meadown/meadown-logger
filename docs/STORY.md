@@ -95,7 +95,7 @@ I started simple: a function that reads `NODE_ENV`, logs with a timestamp, and
 parses the call stack for the source location.
 
 Then came the visual structure: color-coded level tags, the tree layout, the
-clickable OSC-8 link so you can actually navigate to the file. Each piece came
+clickable OSC-8 link so you can jump straight to the exact line in the file. Each piece came
 from a specific frustration with plain `console.log`.
 
 The internal structure is feature-based, each concern in its own folder:

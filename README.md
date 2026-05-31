@@ -30,7 +30,7 @@ tells you where things came from and disappears when you ship.
 
 - **Zero dependencies**
 - **Development-focused** — built for the dev experience, not production ops
-- **Clickable source link** — every log is a clickable link to the exact file it came from
+- **Clickable source link** — every log is a clickable link that jumps to the exact file and line it came from
 - **Tap logging** — log any value or promise inline; fetch calls also get timing, status, size, and body
 - **Color-coded levels** — `[INFO]` cyan, `[WARN]` yellow, `[ERROR]` red
 - **Tree layout output** — clean, scannable structure in your terminal
@@ -163,9 +163,7 @@ as the fetch example above.
 
 ## Clickable source link
 
-That `(server.ts:42)` is a **clickable link**. Click it and the file opens.
-The line number is right there so you can jump straight to it. Works in VS Code,
-iTerm2, WezTerm, Kitty, and Windows Terminal. Degrades to plain text everywhere else.
+That `(server.ts:42)` is a **clickable link**. Click it and your editor opens the file and jumps straight to that line. Works in VS Code, iTerm2, WezTerm, Kitty, and Windows Terminal. Degrades to plain text everywhere else.
 
 ## Color-coded levels
 

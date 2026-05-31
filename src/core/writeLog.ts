@@ -71,7 +71,7 @@ function renderMessage(args: unknown[], useColor: boolean): string {
  */
 function formatLocation(caller: Caller, interactive: boolean): string {
   if (caller.file !== null && caller.line !== null && interactive)
-    return hyperlink(caller.label, fileUrl(caller.file))
+    return hyperlink(caller.label, fileUrl(caller.file, caller.line))
   return caller.label
 }
 
