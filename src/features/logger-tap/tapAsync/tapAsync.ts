@@ -14,9 +14,10 @@ import {
   readBody,
   buildBlock,
 } from "./helpers/index.js"
-import { isTTY } from "../../terminal/isTTY.js"
-import { writeLog } from "../../core/writeLog/index.js"
-import { type Caller } from "../../caller/getCaller.js"
+import { isTTY } from "../../../domain/terminal/isTTY.js"
+import { writeLog } from "../../../domain/write/index.js"
+import { type Caller } from "../../../domain/caller/getCaller.js"
+import { isLogAllowed } from "../../../config/index.js"
 
 /**
  * The async tap. Fire-and-forget: returns `promise` immediately (unchanged),
@@ -30,6 +31,7 @@ export function tapAsync(
   label: string | undefined,
   caller: Caller,
 ): void {
+  if (!isLogAllowed()) return
   const useColor = isTTY("stdout")
   const start = performance.now()
   void promise.then(

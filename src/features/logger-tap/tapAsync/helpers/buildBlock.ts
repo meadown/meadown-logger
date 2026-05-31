@@ -8,7 +8,7 @@
 import { formatWithOptions } from "node:util"
 
 import { formatDuration } from "./format.js"
-import { colorize } from "../../../colors/color.js"
+import { colorize } from "../../../../domain/colors/color.js"
 import { type ResponseLike, formatStatus } from "./response.js"
 
 /**

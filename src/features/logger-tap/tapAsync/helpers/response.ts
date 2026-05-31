@@ -6,7 +6,7 @@
  */
 
 import { formatBytes } from "./format.js"
-import { colorize, type Color } from "../../../colors/color.js"
+import { colorize, type Color } from "../../../../domain/colors/color.js"
 
 export type ResponseLike = {
   status: number

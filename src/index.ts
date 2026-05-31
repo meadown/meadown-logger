@@ -5,10 +5,15 @@
  * All rights reserved
  */
 
-import createLog from "./core/createLog.js"
-import createTap from "./tap/createTap.js"
-import createGroup, { type Group } from "./group/createGroup.js"
-import { getVisibleLines, setVisibleLines } from "./core/writeLog/index.js"
+import {
+  getVisibleLines,
+  setVisibleLines,
+} from "./features/logger-max-lines/index.js"
+import logInfo from "./features/logger/index.js"
+import logWarn from "./features/logger-warn/index.js"
+import logError from "./features/logger-error/index.js"
+import tap, { type Tap } from "./features/logger-tap/index.js"
+import group, { type Group } from "./features/logger-group/index.js"
 
 /** Type of the logger — use this to annotate variables or parameters that accept it. */
 export interface Logger {
@@ -38,7 +43,7 @@ export interface Logger {
    * @param value  Any value or promise — always returned as-is.
    * @param label  Optional label shown next to the value in the log line.
    */
-  tap<T>(value: T, label?: string): T
+  tap: Tap
   /**
    * Log multiple related items as one block under a shared name and single
    * timestamp. Each item in `logs` renders on its own `├──` branch — any value
@@ -83,11 +88,11 @@ export interface Logger {
  * const res  = await logger.tap(fetch(url), "GET /users")
  * ```
  */
-const logger = Object.assign(createLog("log", "[INFO]"), {
-  error: createLog("error", "[ERROR]"),
-  warn: createLog("warn", "[WARN]"),
-  tap: createTap(),
-  group: createGroup(),
+const logger = Object.assign(logInfo, {
+  error: logError,
+  warn: logWarn,
+  tap,
+  group,
 }) as Logger
 
 // `maxLines` is a live getter/setter backed by the shared collapse setting, so

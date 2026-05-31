@@ -8,8 +8,8 @@
 import { formatWithOptions } from "node:util"
 
 import { visibleLines } from "./visibleLines.js"
-import { colorize } from "../../../colors/color.js"
-import { MESSAGE_INDENT } from "../../../constants.js"
+import { colorize } from "../../colors/color.js"
+import { MESSAGE_INDENT } from "../../../const/index.js"
 
 /**
  * Collapses a long multi-line message to {@link visibleLines} lines, replacing
@@ -36,8 +36,5 @@ function collapse(text: string, useColor: boolean): string {
 export function renderMessage(args: unknown[], useColor: boolean): string {
   const text = formatWithOptions({ colors: useColor }, ...args)
   const indent = useColor ? colorize(MESSAGE_INDENT, "gray") : MESSAGE_INDENT
-  return collapse(
-    text.replace(/\n/g, `\n${indent}`),
-    useColor,
-  )
+  return collapse(text.replace(/\n/g, `\n${indent}`), useColor)
 }

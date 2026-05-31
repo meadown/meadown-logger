@@ -7,7 +7,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 
 import logger from "../dist/index.js"
-import { isLogAllowed } from "../dist/config.js"
+import { isLogAllowed } from "../dist/config/index.js"
 import { withEnv, capture } from "./helpers.mjs"
 
 test("isLogAllowed is true outside production", () => {

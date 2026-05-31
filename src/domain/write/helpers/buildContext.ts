@@ -5,16 +5,19 @@
  * All rights reserved
  */
 
-import {
-  type LogChannel,
-  BRANCH,
-  BRANCH_END,
-  SEPARATOR,
-} from "../../../constants.js"
-import { type Caller } from "../../../caller/getCaller.js"
-import { colorize, type Color } from "../../../colors/color.js"
-import { isTTY } from "../../../terminal/isTTY.js"
-import getTimeStamp from "../../../time/getTimeStamp.js"
+import { type LogChannel } from "../../../types/index.js"
+import { BRANCH, BRANCH_END, SEPARATOR } from "../../../const/index.js"
+import { type Caller } from "../../caller/getCaller.js"
+import { colorize, type Color } from "../../colors/color.js"
+
+/** Tag color per channel — cyan for log/tap, yellow for warn, red for error. */
+export const TAG_COLOR: Record<LogChannel, Color> = {
+  log: "cyan",
+  warn: "yellow",
+  error: "red",
+}
+import { isTTY } from "../../terminal/isTTY.js"
+import getTimeStamp from "../../time/getTimeStamp.js"
 import { formatLocation } from "./formatLocation.js"
 
 export interface RenderContext {

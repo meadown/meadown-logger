@@ -5,9 +5,9 @@
  * All rights reserved
  */
 
-import { type LogChannel, TAG_COLOR } from "../../constants.js"
-import { type Caller } from "../../caller/getCaller.js"
-import { renderMessage, buildContext } from "./helpers/index.js"
+import { type LogChannel } from "../../types/index.js"
+import { type Caller } from "../caller/getCaller.js"
+import { renderMessage, buildContext, TAG_COLOR } from "./helpers/index.js"
 
 /**
  * Renders and writes one log entry. The `caller` is resolved by the *caller* of

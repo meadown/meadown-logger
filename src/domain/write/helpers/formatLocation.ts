@@ -5,8 +5,8 @@
  * All rights reserved
  */
 
-import { type Caller } from "../../../caller/getCaller.js"
-import { fileUrl, hyperlink } from "../../../decorations/link.js"
+import { type Caller } from "../../caller/getCaller.js"
+import { fileUrl, hyperlink } from "../../decorations/link.js"
 
 /**
  * Renders a caller as a `(file:line)` location — a clickable OSC-8 link on a

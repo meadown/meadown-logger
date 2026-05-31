@@ -5,7 +5,7 @@
  * All rights reserved
  */
 
-import { colorize } from "../../../colors/color.js"
+import { colorize } from "../../../../domain/colors/color.js"
 
 /** `65ms` (green) · `1.2s` (yellow) · `5.8s` (red). */
 export function formatDuration(ms: number, useColor: boolean): string {

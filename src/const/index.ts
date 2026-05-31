@@ -8,18 +8,6 @@
  * shape an entry live in one place instead of as magic literals across modules.
  */
 
-import { type Color } from "./colors/color.js"
-
-/** The console channels the logger writes to. */
-export type LogChannel = "log" | "error" | "warn"
-
-/** The tag color per channel: info/tap → cyan, warn → yellow, error → red. */
-export const TAG_COLOR: Record<LogChannel, Color> = {
-  log: "cyan",
-  warn: "yellow",
-  error: "red",
-}
-
 /** Glyphs that draw each entry's little tree. */
 export const BRANCH = "├──" // the message branch
 export const BRANCH_END = "└──" // the last (metadata) branch

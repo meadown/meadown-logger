@@ -5,9 +5,13 @@
  * All rights reserved
  */
 
-import { type LogChannel, TAG_COLOR } from "../constants.js"
-import { type Caller } from "../caller/getCaller.js"
-import { renderMessage, buildContext } from "../core/writeLog/helpers/index.js"
+import {
+  renderMessage,
+  buildContext,
+  TAG_COLOR,
+} from "../../domain/write/helpers/index.js"
+import { type LogChannel } from "../../types/index.js"
+import { type Caller } from "../../domain/caller/getCaller.js"
 
 export function writeGroup(opts: {
   name: string
