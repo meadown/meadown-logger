@@ -123,26 +123,22 @@ function buildBlock(
   body: { data: unknown; size: string },
   useColor: boolean,
 ): unknown[] {
-  const pipe = useColor ? colorize("│", "gray") : "│"
-  const branch = useColor ? colorize("├──", "gray") : "├──"
-  const last = useColor ? colorize("└──", "gray") : "└──"
+  const paint = (s: string, c: Parameters<typeof colorize>[1]): string =>
+    useColor ? colorize(s, c) : s
+  const pipe = paint("│", "gray")
+  const branch = paint("├──", "gray")
+  const last = paint("└──", "gray")
   const indent = `${pipe}  `
 
-  const statusLine = `${indent}${branch} status: ${formatStatus(res, useColor)}`
   const timeLine = `${indent}${branch} time:   ${formatDuration(ms, useColor)}`
+  const statusLine = `${indent}${branch} status: ${formatStatus(res, useColor)}`
   const sizeLine = `${indent}${last} size:   ${body.size}`
+  const responseLines = [`${pipe}`, `${indent}response:`, timeLine, statusLine, sizeLine]
 
-  const responseBlock = [
-    `${pipe}`,
-    `${indent}response:`,
-    timeLine,
-    statusLine,
-    sizeLine,
-  ].join("\n")
+  const head = label === undefined ? "" : `${label}\n`
 
   if (body.data === undefined) {
-    const head = label === undefined ? "" : `${label}\n`
-    return [`${head}${responseBlock}`]
+    return [`${head}${responseLines.join("\n")}`]
   }
 
   // Render the body using util.formatWithOptions so objects/arrays look like
@@ -154,18 +150,7 @@ function buildBlock(
     .map((line, i) => `${indent}${i === lastIdx ? last : branch} ${line}`)
     .join("\n")
 
-  const full = [
-    `${pipe}`,
-    `${indent}response:`,
-    timeLine,
-    statusLine,
-    sizeLine,
-    `${pipe}`,
-    `${indent}body:`,
-    bodyBlock,
-  ].join("\n")
-
-  const head = label === undefined ? "" : `${label}\n`
+  const full = [...responseLines, `${pipe}`, `${indent}body:`, bodyBlock].join("\n")
   return [`${head}${full}`]
 }
 

@@ -19,7 +19,7 @@ import {
 import { type Caller } from "../caller/getCaller.js"
 import getTimeStamp from "../time/getTimeStamp.js"
 import { fileUrl, hyperlink } from "../decorations/link.js"
-import { colorize } from "../colors/color.js"
+import { colorize, type Color } from "../colors/color.js"
 import { isTTY } from "../terminal/isTTY.js"
 
 /** Max message lines to show before collapsing the rest; 0 (default) shows all. */
@@ -93,18 +93,16 @@ export function writeLog(opts: {
   // One terminal check drives both color and clickable links — `isTTY` is the
   // single source of truth (DRY). Off when output is piped/redirected.
   const useColor = isTTY(streamName)
+  const paint = (s: string, c: Color): string =>
+    useColor ? colorize(s, c) : s
   const location = formatLocation(caller, useColor)
 
-  // Colors (terminal only): tag by level, timestamp teal, location dim teal,
-  // branch and separator gray.
-  const tagOut = useColor ? colorize(tag, TAG_COLOR[channel]) : tag
-  const timeStamp = useColor ? colorize(getTimeStamp(), "teal") : getTimeStamp()
-  const locOut = useColor
-    ? colorize(`(${location})`, "dimTeal")
-    : `(${location})`
-  const connector = useColor ? colorize(BRANCH, "gray") : BRANCH
-  const connectorBottom = useColor ? colorize(BRANCH_END, "gray") : BRANCH_END
-  const separator = useColor ? colorize(SEPARATOR, "gray") : SEPARATOR
+  const tagOut = paint(tag, TAG_COLOR[channel])
+  const timeStamp = paint(getTimeStamp(), "teal")
+  const locOut = paint(`(${location})`, "dimTeal")
+  const connector = paint(BRANCH, "gray")
+  const connectorBottom = paint(BRANCH_END, "gray")
+  const separator = paint(SEPARATOR, "gray")
 
   // Layout: the tag, the message hanging off a `├──` branch, then the timestamp
   // and location on a `└──` branch below. Leading `\n` spaces entries apart.
