@@ -1,4 +1,4 @@
-# Dev Journal — @meadown/logger
+# Dev Journal: @meadown/logger
 
 > A complete record of the design and development conversation: what was asked,
 > what was suggested, what was decided, and why. Ordered chronologically from
@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Starting point — the utility split
+## 1. Starting point: the utility split
 
 **Asked:** Split `caller()` and `getTimeStamp()` out of `index.ts` into a utils
 folder.
@@ -19,7 +19,7 @@ own file and made the utilities independently testable.
 
 ---
 
-## 2. Consumer configuration — `isLogAllowed` and `isDebugAllowed`
+## 2. Consumer configuration: `isLogAllowed` and `isDebugAllowed`
 
 **Asked:** Let the consumer optionally override `isLogAllowed` and
 `isDebugAllowed` at install time but make it optional.
@@ -39,7 +39,7 @@ to explain, document, and support. When in doubt, remove it.
 
 ---
 
-## 3. Named exports — `{ customLog, customLogConfig }`
+## 3. Named exports: `{ customLog, customLogConfig }`
 
 **Asked:** Export the logger as `{ customLog, customLogConfig }` (named
 destructuring), not just a default.
@@ -67,8 +67,8 @@ adequately.
 
 **Asked:** Should there be a `NODE_ENV` in the user's `.env`?
 
-**Discussion:** `.env` files do not automatically set `process.env.NODE_ENV` —
-something has to load them first (dotenv, `node --env-file`, frameworks).
+**Discussion:** `.env` files do not automatically set `process.env.NODE_ENV`.
+Something has to load them first (dotenv, `node --env-file`, frameworks).
 Considered three options:
 
 - Keep `NODE_ENV` and document it.
@@ -105,7 +105,7 @@ as `LogFN` from declaration — enforced, not asserted.
 **Problem hit:** Consumer `educare-backend` was CJS and couldn't `require()`
 the ESM-only package. Error: "Cannot find module."
 
-**Decided:** Add a dual build — ESM stays as `dist/`, CJS goes to `dist/cjs/`
+**Decided:** Add a dual build. ESM stays as `dist/`, CJS goes to `dist/cjs/`
 with a `{ "type": "commonjs" }` marker file written by a post-build script.
 
 **How:** Second `tsc` pass with `tsconfig.cjs.json` (`module: commonjs`,
@@ -127,7 +127,7 @@ exported. Added `export { logger }`.
 **Problem:** MM/DD/YYYY is ambiguous, doesn't sort, and the year + timezone
 clutters every line.
 
-**Final decision:** `05-30 04:00:00 PM` — ISO date order (`MM-DD`), 12-hour
+**Final decision:** `05-30 04:00:00 PM`. ISO date order (`MM-DD`), 12-hour
 time, no year, no timezone. Short, unambiguous, readable.
 
 **Why drop the year and timezone:** If you're looking at logs live you know what
@@ -139,24 +139,24 @@ day it is. The timezone is always your own.
 
 **Asked:** Add color-coded level tags.
 
-**Designed:** Raw ANSI escape codes — no `chalk`, no external package. Separate
+**Designed:** Raw ANSI escape codes, no `chalk`, no external package. Separate
 `colorize(text, color)` function for applying color, `isTTY(streamName)` for
 deciding whether to apply it. Kept separate so the decision and the action are
 decoupled.
 
 **Colors chosen:**
 
-- `[INFO]` → cyan
-- `[WARN]` → yellow
-- `[ERROR]` → red
-- Timestamp + location → teal / dim teal
-- Branch glyphs → gray
+- `[INFO]` cyan
+- `[WARN]` yellow
+- `[ERROR]` red
+- Timestamp + location: teal / dim teal
+- Branch glyphs: gray
 
 **Asked:** Add `teal` and `dimTeal` as named colors.
 
 **Done:** Added as 256-color ANSI codes (`38;5;30` and `38;5;23`).
 
-**Asked:** Color only the tag — not the full line.
+**Asked:** Color only the tag, not the full line.
 
 **Done:** Timestamp and location are separate arguments; `colorize` applies only
 to the tag and branch connector.
@@ -176,7 +176,7 @@ to the tag and branch connector.
 `├──` / `└──` branch connectors.
 
 **Problem hit:** The `console.log("")` added to create a blank line above each
-entry always wrote to `stdout` — even for `error`/`warn` which write to
+entry always wrote to `stdout`, even for `error`/`warn` which write to
 `stderr`. The timestamp and message landed on different streams. Broke tests.
 
 **Fix:** Fold the blank line into the same `console[channel]` call as a leading
@@ -197,7 +197,7 @@ the plain-mode fallback used the wrong constant. Fixed.
 
 ## 11. Clickable source links (F1)
 
-**Asked:** Implement the headline feature — `(server.ts:42)` should be a
+**Asked:** Implement the headline feature. `(server.ts:42)` should be a
 clickable link in the terminal.
 
 **Technology:** OSC-8 hyperlinks (`\x1b]8;;URL\x07text\x1b]8;;\x07`). Pure
@@ -223,7 +223,7 @@ Fixed to `\.[cm]?[jt]sx?`. Test confirmed `logger.test.mjs:42` now resolves.
 
 ---
 
-## 12. `logger.tap` — the headline feature
+## 12. `logger.tap`: the headline feature
 
 **Motivation:** Writing:
 
@@ -235,13 +235,13 @@ return user
 
 Two lines every time. Wanted one.
 
-**API design discussion — should tap be sync only or handle promises?**
+**API design discussion: should tap be sync only or handle promises?**
 
 First proposal: sync `tap` + separate `tapAsync`. Decided against splitting
-the public API — the consumer shouldn't choose. One `tap` that internally
-routes: sync value → log inline, promise → use the async path.
+the public API. The consumer shouldn't choose. One `tap` that internally
+routes: sync value logs inline, promise uses the async path.
 
-**The critical constraint — caller location:**
+**The critical constraint: caller location.**
 
 `getCaller()` reads a fixed stack depth. Any extra function frame between the
 user's call and `getCaller()` points the location at the wrong file. The rule:
@@ -257,21 +257,21 @@ the location points at the user's code even across `await`.
 
 ```
 tap/
-  createTap.ts   — public `tap`; resolves caller; routes to tapAsync or sync writeLog
-  tapAsync.ts    — the async path; timing, status, body, rejection logging
+  createTap.ts   the public `tap`; resolves caller; routes to tapAsync or sync writeLog
+  tapAsync.ts    the async path; timing, status, body, rejection logging
 ```
 
-**Verified:** Location is correct from every call context — top-level, regular
+**Verified:** Location is correct from every call context: top-level, regular
 function, arrow, class method, static method, async/await, callback.
 
 ---
 
-## 13. API response logging — `tap(fetch(...))`
+## 13. API response logging: `tap(fetch(...))`
 
 **Realised:** `tap` on a fetch promise resolves to a `Response`, not the data.
 To show what actually came back, the body needs to be read.
 
-**Constraint:** The caller's `Response` must stay consumable — if `tap` reads
+**Constraint:** The caller's `Response` must stay consumable. If `tap` reads
 the body, the consumer can't call `res.json()` anymore.
 
 **Solution:** `res.clone()` in the background. Read the clone, leave the
@@ -289,14 +289,14 @@ data: { id: 1, name: 'Leanne Graham', … }
 ```
 
 **Size problem:** `Content-Length` is absent on compressed responses
-(`Content-Encoding: br` or `gzip` — most production APIs). Relying on the
+(`Content-Encoding: br` or `gzip`, most production APIs). Relying on the
 header meant size never showed for real-world endpoints.
 
 **Fix:** Compute size from `new TextEncoder().encode(text).length` on the body
 text already read from the clone. Size is now always shown regardless of
 compression.
 
-**Rejection logging:** Initially silent on rejected promises. Fixed to log
+**Rejection logging:** Initially nothing happened on rejected promises. Fixed to log
 `[TAP] label rejected after 42ms TypeError: fetch failed …` to `stderr`.
 
 **Large body protection:** Body reading gated at 512 KB (`Content-Length` check
@@ -313,14 +313,14 @@ of buffering the whole thing.
 
 ```
 src/
-  core/         — createLog, writeLog (the pipeline)
-  tap/          — createTap, tapAsync
-  colors/       — colorize, Color type
-  decorations/  — OSC-8 clickable links
-  caller/       — getCaller (stack → file:line)
-  time/         — getTimeStamp
-  terminal/     — isTTY (single source of truth)
-  constants.ts  — all layout values in one place
+  core/         createLog, writeLog (the pipeline)
+  tap/          createTap, tapAsync
+  colors/       colorize, Color type
+  decorations/  OSC-8 clickable links
+  caller/       getCaller (stack -> file:line)
+  time/         getTimeStamp
+  terminal/     isTTY (single source of truth)
+  constants.ts  all layout values in one place
 ```
 
 **DRY applied:** `supportsColor` and `supportsHyperlinks` were byte-for-byte
@@ -352,11 +352,11 @@ feature folder.
 
 **Audit findings resolved:**
 
-- Source maps (`22 .map` files) were shipping in the tarball — removed by
+- Source maps (`22 .map` files) were shipping in the tarball. Removed by
   setting `sourceMap: false` in `tsconfig.json`.
-- `MESSAGE_INDENT` was 3 spaces but `├── ` is 4 columns wide — off by one.
+- `MESSAGE_INDENT` was 3 spaces but `├── ` is 4 columns wide. Off by one.
   Fixed in `constants.ts`.
-- Plain-mode tree used `└──` for the message branch instead of `├──` — fixed.
+- Plain-mode tree used `└──` for the message branch instead of `├──`. Fixed.
 
 ---
 
@@ -365,12 +365,12 @@ feature folder.
 **Original framing:** "Shuts up in production."
 
 **Problem with that framing:** It defines the package by what it doesn't do
-in production — which implicitly closes the door on a future production-grade
+in production, which implicitly closes the door on a future production-grade
 logger. It also undersells the development experience, which is the real value.
 
 **New framing:** "Development-focused logger."
 
-The production silence is a _consequence_ of being development-focused, not the
+The production handling is a consequence of being development-focused, not the
 identity. A production logger with transports, persistence, and log levels is a
 separate product. This one is for the part of your day when you're moving fast
 and need to know what your code is doing right now.
@@ -404,7 +404,7 @@ These came up repeatedly and shaped every decision:
 | `isDebugAllowed` / `.debug()`          | Out of v1 scope                                    |
 | `FORCE_HYPERLINK` env var              | Violates zero-env rule                             |
 | `LOG_EDITOR` / `vscode://` deep link   | Violates zero-env rule                             |
-| Click-to-expand collapse               | Terminals can't do it — not a browser              |
+| Click-to-expand collapse               | Terminals can't do it, not a browser               |
 | Temp file for collapsed content        | Writes to disk, privacy risk, complexity           |
 | `supportsColor` / `supportsHyperlinks` | Duplicate of `isTTY`                               |
 | `utils/index.ts` barrel                | Only used by one file; removed for directness      |

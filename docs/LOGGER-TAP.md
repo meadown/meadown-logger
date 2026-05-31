@@ -1,4 +1,4 @@
-# Implementation Plan — `logger.tap()`
+# Implementation Plan: `logger.tap()`
 
 > Inline "log a value and keep going" helper. Status: planned.
 > Companion to [PRD.md](./PRD.md).
@@ -32,9 +32,9 @@ So the rule is:
 > `tap`), never inside a shared helper. The resolved `Caller` is then **passed down**.
 
 ```
-user → logClosure → getCaller        ✅ correct depth
-user → tap        → getCaller        ✅ correct depth (same depth)
-user → tap → writeLog → getCaller    ❌ one frame too deep → wrong file
+user -> logClosure -> getCaller        ✅ correct depth
+user -> tap        -> getCaller        ✅ correct depth (same depth)
+user -> tap -> writeLog -> getCaller   ❌ one frame too deep -> wrong file
 ```
 
 This is why the shared writer takes a `caller` argument instead of resolving it.
@@ -68,8 +68,8 @@ export function writeLog(opts: {
 }): void
 ```
 
-It reuses the existing `renderMessage()` (`util.formatWithOptions`) for the message —
-**do not** introduce `JSON.stringify`. `formatWithOptions` already handles circular
+It reuses the existing `renderMessage()` (`util.formatWithOptions`) for the message.
+Do not introduce `JSON.stringify`. `formatWithOptions` already handles circular
 refs (`[Circular]`), Errors, functions, symbols, `Map`/`Set`, and colors, and keeps
 tap output identical to normal log output.
 
@@ -141,7 +141,7 @@ Reuse the existing single-`├──`-branch layout (label and value go through
 ```
 
 Putting `label` and `value` on **separate** `├──` branches would require teaching the
-writer to render each arg as its own branch — deferred as an optional enhancement,
+writer to render each arg as its own branch. Deferred as an optional enhancement,
 not part of v1.
 
 ## Tests (`test/tap.test.mjs`)
@@ -149,7 +149,7 @@ not part of v1.
 - returns the **exact same value** (identity, incl. objects/arrays by reference)
 - logs the label and the value when a label is given
 - works **without** a label
-- **silent in production** but still returns the value
+- **suppressed in production** but still returns the value
 - caller location points at the **calling file** (the test file)
 - a **circular** object does not crash (relies on `formatWithOptions`)
 - `[TAP]` tag is present
