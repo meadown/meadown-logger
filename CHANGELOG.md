@@ -1,3 +1,14 @@
+## [1.8.7](https://github.com/meadown/meadown-logger/compare/v1.8.6...v1.8.7) (2026-05-31)
+
+### Bug Fixes
+
+* **caller:** guard missing stack location match ([3a52137](https://github.com/meadown/meadown-logger/commit/3a5213738ed0b4515649423dda8629cc33ef289a))
+* **format:** align multiline message indentation ([8f3ed08](https://github.com/meadown/meadown-logger/commit/8f3ed0849e63338806cbd7ca226e1d8fc1bd6b38))
+
+### Refactoring
+
+* **logging:** centralize conditional color output ([3da76a3](https://github.com/meadown/meadown-logger/commit/3da76a3f16aa96dd435e968175a4fe2ea335af25))
+
 ## [1.8.6](https://github.com/meadown/meadown-logger/compare/v1.8.5...v1.8.6) (2026-05-30)
 
 ### Documentation
