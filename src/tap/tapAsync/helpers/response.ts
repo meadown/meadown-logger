@@ -5,8 +5,8 @@
  * All rights reserved
  */
 
-import { colorize, type Color } from "../../../colors/color.js"
 import { formatBytes } from "./format.js"
+import { colorize, type Color } from "../../../colors/color.js"
 
 export type ResponseLike = {
   status: number

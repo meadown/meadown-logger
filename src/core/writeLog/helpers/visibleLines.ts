@@ -5,7 +5,7 @@
  * All rights reserved
  */
 
-import { DEFAULT_MAX_LINES } from "../../constants.js"
+import { DEFAULT_MAX_LINES } from "../../../constants.js"
 
 /** Max message lines to show before collapsing the rest; 0 (default) shows all. */
 export let visibleLines = DEFAULT_MAX_LINES

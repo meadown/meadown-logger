@@ -7,9 +7,9 @@
 
 import { formatWithOptions } from "node:util"
 
-import { MESSAGE_INDENT } from "../../constants.js"
-import { colorize } from "../../colors/color.js"
 import { visibleLines } from "./visibleLines.js"
+import { colorize } from "../../../colors/color.js"
+import { MESSAGE_INDENT } from "../../../constants.js"
 
 /**
  * Collapses a long multi-line message to {@link visibleLines} lines, replacing
