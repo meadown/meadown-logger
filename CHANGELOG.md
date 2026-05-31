@@ -1,3 +1,18 @@
+## [1.9.0](https://github.com/meadown/meadown-logger/compare/v1.8.11...v1.9.0) (2026-05-31)
+
+### Features
+
+* add grouped logger output ([560dceb](https://github.com/meadown/meadown-logger/commit/560dceb785725ee8b78642f088bc745c0db4320a))
+
+### Refactoring
+
+* reorganize logger architecture ([638c051](https://github.com/meadown/meadown-logger/commit/638c0510c3223887b2b9d78f904f9f0f2f5fbd3e))
+
+### Documentation
+
+* document logger architecture ([0c6818c](https://github.com/meadown/meadown-logger/commit/0c6818c42804b977f1750774ba9ceb1c4b393b85))
+* update README for clarity and consistency in features and usage examples ([410c5c8](https://github.com/meadown/meadown-logger/commit/410c5c8b433e8b5852a1c92b96323a25ddcccf08))
+
 ## [1.8.11](https://github.com/meadown/meadown-logger/compare/v1.8.10...v1.8.11) (2026-05-31)
 
 ### Bug Fixes
