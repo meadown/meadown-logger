@@ -11,34 +11,32 @@
  * to confirm it degrades to clean plain text with no escape codes.
  */
 
-import logger, { type LogFN } from "../dist/index.js"
+import logger from "../dist/index.js"
 
-const log: LogFN = logger
+logger.maxLines = 0 // 0 means no limit — show all lines
 
-log.maxLines = 0 // 0 means no limit — show all lines
+// Basic info logger.
+logger("Server running on port 5000")
 
-// Basic info log.
-log("Server running on port 5000")
-
-// Multiple arguments — everything is printed as-is, like console.log.
-log("Auth", "user logged in", { userId: 42, role: "admin" })
+// Multiple arguments — everything is printed as-is, like console.logger.
+logger("Auth", "user logged in", { userId: 42, role: "admin" })
 
 // Objects and arrays keep console's native formatting.
-log("Cache stats", { hits: 128, misses: 7, ratio: 0.95 })
+logger("Cache stats", { hits: 128, misses: 7, ratio: 0.95 })
 
 // Warnings go to stderr with a yellow tag.
-log.warn("disk usage above 80%")
+logger.warn("disk usage above 80%")
 
 // Errors go to stderr with a red tag; pass along an Error for the stack.
-log.error("database connection failed", new Error("ECONNREFUSED"))
+logger.error("database connection failed", new Error("ECONNREFUSED"))
 
 // Arrow function — location still points here, not at an internal.
 const arrowFunction = (): number[] => {
-  log("inside an arrow function")
-  return log.tap([1, 2, 3], "arrow-fn")
+  logger("inside an arrow function")
+  return logger.tap([1, 2, 3], "arrow-fn")
 }
 arrowFunction()
 
-// tap logs a value and returns it unchanged, so it drops into any expression.
-const port: number = log.tap(5000, "port")
-log("using port", port)
+// tap loggers a value and returns it unchanged, so it drops into any expression.
+const port: number = logger.tap(5000, "port")
+logger("using port", port)

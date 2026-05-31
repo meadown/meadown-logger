@@ -55,7 +55,7 @@ const createdPostResponse = await logger.tap(
   }),
   "POST /posts",
 )
-const createdPost = await createdPostResponse.json() as Post
+const createdPost = (await createdPostResponse.json()) as Post
 logger("created post id:", createdPost.id)
 
 // A bigger endpoint — execution time switches to seconds past 1s.
