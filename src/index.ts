@@ -9,41 +9,70 @@ import createLog from "./core/createLog.js"
 import createTap from "./tap/createTap.js"
 import { getVisibleLines, setVisibleLines } from "./core/writeLog/index.js"
 
-/** The logger: a callable for info logs, plus `.error`, `.warn`, and `.tap`. */
-export interface LogFN {
+/** Type of the logger — use this to annotate variables or parameters that accept it. */
+export interface Logger {
+  /** Log at info level — `stdout`, cyan `[INFO]` tag. */
   (...args: unknown[]): void
+  /** Log at error level — `stderr`, red `[ERROR]` tag. */
   error(...args: unknown[]): void
+  /** Log at warn level — `stderr`, yellow `[WARN]` tag. */
   warn(...args: unknown[]): void
   /**
-   * Logs `value` (optionally tagged with `label`) and returns it **unchanged**,
-   * so it drops into any expression: `const u = logger.tap(getUser(), "user")`.
-   * Pass a **promise** (e.g. a `fetch`) and you get the same promise back while
-   * its elapsed time — and the HTTP status if it's a `Response` — is logged in
-   * the background. Silent in production; the value always flows through.
+   * Logs `value` with an optional `label` and gives it straight back unchanged
+   * — so you can drop it into any expression without adding an extra line.
+   *
+   * **Sync value** — logged immediately, returned as-is:
+   * ```ts
+   * const port = logger.tap(3000, "port")       // logs it, port is still 3000
+   * const user = logger.tap(getUser(), "user")  // logs the user object, returns it
+   * ```
+   *
+   * **Promise** — the same promise comes back; timing and HTTP status are logged
+   * in the background once it settles, without blocking your code:
+   * ```ts
+   * const res  = await logger.tap(fetch(url), "GET /users")  // logs status + ms
+   * const data = await logger.tap(loadConfig(), "config")    // logs value + ms
+   * ```
+   *
+   * @param value  Any value or promise — always returned as-is.
+   * @param label  Optional label shown next to the value in the log line.
    */
   tap<T>(value: T, label?: string): T
   /**
-   * How many lines of a multi-line message to show before collapsing the rest
-   * into a `… N more lines` summary. `0` (the default) shows everything.
+   * How many lines to show before the rest collapses into a
+   * `… N more lines` summary. `0` (default) shows everything.
+   *
+   * @example
+   * logger.maxLines = 5
    */
   maxLines: number
 }
 
 /**
- * Logs to the console, but only outside production. Each line is prefixed with
- * a level tag, a short local timestamp, and a clickable link to the file it was
- * called from; all arguments are then printed as-is.
+ * A logger built for development — colored tags, a local timestamp, and a
+ * clickable `(file:line)` link on every line so you always know where a
+ * message came from. Works like `console.log`: pass anything and it prints.
+ *
+ * Logs only when `NODE_ENV !== "production"`.
+ *
  * @example
- * logger("Auth", "user logged in")
- * // [INFO] 05-30 04:00:00 PM (server.ts:42) Auth user logged in
- * @example
- * logger.maxLines = 5 // long messages collapse to 5 lines; 0 = show all
+ * ```ts
+ * logger("server started", { port: 3000 })
+ * logger.error("db failed", new Error("ECONNREFUSED"))
+ * logger.warn("disk above 80%")
+ * ```
+ *
+ * @example Tap — keep the value flowing, log it on the side
+ * ```ts
+ * const user = logger.tap(await getUser(id), "user")
+ * const res  = await logger.tap(fetch(url), "GET /users")
+ * ```
  */
 const logger = Object.assign(createLog("log", "[INFO]"), {
   error: createLog("error", "[ERROR]"),
   warn: createLog("warn", "[WARN]"),
   tap: createTap(),
-}) as LogFN
+}) as Logger
 
 // `maxLines` is a live getter/setter backed by the shared collapse setting, so
 // setting it once affects info, error, and warn alike.
