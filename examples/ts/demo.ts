@@ -1,17 +1,18 @@
 /*
- * demo.mjs
+ * demo.ts
  * A quick manual playground for logger.
  *
  * Run it:
- *   pnpm build && node examples/demo.mjs
+ *   pnpm demo
+ *   pnpm build && node --experimental-strip-types examples/ts/demo.ts
  *
  * Running directly in a terminal means stdout is a TTY, so you'll see the
  * colored level tags, the gray clickable (file:line) link, and the └── branch.
- * Pipe it to a file (node examples/demo.mjs > out.txt) to confirm it degrades
- * to clean plain text with no escape codes.
+ * Pipe it to a file (node --experimental-strip-types examples/ts/demo.ts > out.txt)
+ * to confirm it degrades to clean plain text with no escape codes.
  */
 
-import logger from "../dist/index.js"
+import logger from "../../dist/index.js"
 
 logger.maxLines = 0 // 0 means no limit — show all lines
 
@@ -31,12 +32,12 @@ logger.warn("disk usage above 80%")
 logger.error("database connection failed", new Error("ECONNREFUSED"))
 
 // Arrow function — location still points here, not at an internal.
-const arrowFunction = () => {
+const arrowFunction = (): number[] => {
   logger("inside an arrow function")
   return logger.tap([1, 2, 3], "arrow-fn")
 }
 arrowFunction()
 
-// tap logs a value and returns it, so it drops into any expression.
-const port = logger.tap(5000, "port") // logs it, `port` is still 5000
+// tap logs a value and returns it unchanged, so it drops into any expression.
+const port: number = logger.tap(5000, "port")
 logger("using port", port)
