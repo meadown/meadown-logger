@@ -108,12 +108,11 @@ export const logger = (...args) => log(...args)
 │ logger.tap()    │ [TAP]       │ value: T, label?: string │ log value, returns as-is  │
 ├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
 │ logger.group()  │ [name]      │ { name: string,          │ consolidate related       │
-│                 │             │   type?: GroupType, ¹    │ items under a label       │
+│                 │             │   type?: LogChannel,     │ items under a label       │
 │                 │             │   logs: unknown[] }      │                           │
 ├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
 │ logger.maxLines │ —           │ number                   │ cap output at N lines     │
 └─────────────────┴─────────────┴──────────────────────────┴───────────────────────────┘
-¹ GroupType: "info" | "warn" | "error"  (defaults to "info")
 ```
 
 Every tag is self-describing. You scan the logs and immediately know what each
@@ -230,18 +229,18 @@ logger.group({
 └── 05-30 04:00:00 PM - (server.ts:23)
 ```
 
-Use `type` to set the channel and tag color:
+Use `type` to set the channel and tag color. Defaults to `"log"` (cyan, stdout).
 
 ```ts
 logger.group({
   name: "Validation failed",
-  type: "error",
+  type: "error", // red, stderr
   logs: ["email invalid", "password too short"],
 })
 
 logger.group({
   name: "Config warnings",
-  type: "warn",
+  type: "warn", // yellow, stderr
   logs: ["deprecated key found", "missing optional field"],
 })
 ```
@@ -285,8 +284,8 @@ Got a massive object dumping 200 lines? Set this and it cuts off after N lines
 with a count of what's hidden. Set back to `0` to show everything again.
 
 ```ts
-logger.maxLines = 5  // show 5 lines, then "... N more lines"
-logger.maxLines = 0  // default — show everything
+logger.maxLines = 5 // show 5 lines, then "... N more lines"
+logger.maxLines = 0 // default — show everything
 ```
 
 ## Production

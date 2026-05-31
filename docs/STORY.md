@@ -241,3 +241,9 @@ tradeoffs more carefully, but every product and architectural decision was mine.
 | Testing              | 29 tests async paths, location accuracy, circular objects, edge cases               |
 | Security             | Zero deps, no disk/network access, trust boundary documented, advisory process      |
 | AI fluency           | Used Claude as an implementation partner, owned all product and technical decisions |
+
+---
+
+Architected and developed by [Dewan Mobashirul](https://linkedin.com/in/dewan-meadown)
+
+MIT © [meadown](https://github.com/meadown)

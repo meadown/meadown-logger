@@ -1,451 +1,181 @@
 # Dev Journal: @meadown/logger
 
-> A complete record of the design and development conversation: what was asked,
-> what was suggested, what was decided, and why. Ordered chronologically from
-> the first question to the current state.
+Decisions that left no artifact — what was tried and removed, what failed and
+why, and the rules that shape every feature. Written for future maintainers who
+need to understand the constraints before changing anything.
+
+**Who was involved:** Dewan Mobashirul (author and architect) directed every
+decision. Claude (Anthropic's AI coding assistant, via Claude Code) implemented
+and proposed. From entry 6 onward the conversation between Dewan and Claude
+is the primary subject.
 
 ---
 
-## 1. Starting point: the utility split
+## 1. Zero-config — why there is no configure()
 
-**Asked:** Split `caller()` and `getTimeStamp()` out of `index.ts` into a utils
-folder.
+A `configure()` function was built early. It let consumers override
+`isLogAllowed` and pass a `mode` type (`"development" | "production" | "both"`).
+It was removed before release.
 
-**Done:** Created `src/utils/getFileName.ts` and `src/utils/getTimeStamp.ts`,
-wired up a barrel export.
+The zero-config identity is more valuable than the config surface. Every option
+added is one more thing to explain, document, and support. `NODE_ENV` is the
+only knob consumers need — it's already set by their runtime, their framework,
+or their deploy pipeline. No init call, no options object.
 
-**Why it mattered:** Index was doing too much. Splitting gave each concern its
-own file and made the utilities independently testable.
-
----
-
-## 2. Consumer configuration: `isLogAllowed` and `isDebugAllowed`
-
-**Asked:** Let the consumer optionally override `isLogAllowed` and
-`isDebugAllowed` at install time but make it optional.
-
-**Suggested:** A `configure()` function with optional fields, falling back to
-env-based defaults when omitted. Added a `LoggerOptions` interface.
-
-**Decided:** Built it. Then added a `mode` type (`"development" | "production" |
-"both"`) instead of raw booleans — more readable at the call site.
-
-**Then decided:** Remove `customLogConfig` entirely. The zero-config identity
-is more valuable than a config surface. `NODE_ENV` is the only knob consumers
-need.
-
-**Lesson:** Configuration APIs have a cost. Every option added is one more thing
-to explain, document, and support. When in doubt, remove it.
+**Rule:** `NODE_ENV` is the only consumer-facing env var. No `FORCE_HYPERLINK`,
+no `LOG_EDITOR`, no `DEBUG`. If a feature requires the user to set an env var,
+it gets removed.
 
 ---
 
-## 3. Named exports: `{ customLog, customLogConfig }`
+## 2. Caller location — the constraint that shapes everything
 
-**Asked:** Export the logger as `{ customLog, customLogConfig }` (named
-destructuring), not just a default.
+`getCaller()` reads a fixed stack depth to resolve `file:line`. The depth is:
 
-**Done:** Both named and default exports added.
-
-**Later:** `customLogConfig` removed. `customLog` renamed to `logger` as the
-primary API name. Both named and default exports kept so `import logger` and
-`import { logger }` both work.
-
----
-
-## 4. Debug removal
-
-**Asked:** Remove the debug feature entirely for this version.
-
-**Done:** Dropped `.debug()`, `isDebugAllowed`, and `DEBUG` env var check.
-
-**Why:** Scope discipline. Version 1 should do one thing well, not four things
-adequately.
-
----
-
-## 5. NODE_ENV and the .env problem
-
-**Asked:** Should there be a `NODE_ENV` in the user's `.env`?
-
-**Discussion:** `.env` files do not automatically set `process.env.NODE_ENV`.
-Something has to load them first (dotenv, `node --env-file`, frameworks).
-Considered three options:
-
-- Keep `NODE_ENV` and document it.
-- Add an explicit `env` override (`customLogConfig({ env: "production" })`).
-- Drop `NODE_ENV` entirely.
-
-**Prototyped:** The `env` override. Then reverted — felt messy and premature.
-
-**Decided:** Option A. Read `NODE_ENV` directly. No config surface. Document
-the `.env` caveat. Recorded in `docs/DECISIONS.md`.
-
-**Rule established:** `NODE_ENV` is the only consumer-facing env var. No other
-env knobs, no `FORCE_HYPERLINK`, no `LOG_EDITOR`. Features must work zero-config
-with only `process.env.NODE_ENV`.
-
----
-
-## 6. Fixing the `as LogFN` cast
-
-**Asked:** Why does the code do `const log = customLog as LogFN`?
-
-**Explanation:** The cast bridged the gap between the inferred type of the
-function-plus-properties pattern and the named `LogFN` interface. When the
-interface was updated to match the implementation exactly, the cast became
-redundant — eslint flagged it.
-
-**Fix:** Refactored to `Object.assign((...args) => {…}, { error, warn })` typed
-as `LogFN` from declaration — enforced, not asserted.
-
----
-
-## 7. CJS + ESM dual build
-
-**Problem hit:** Consumer `educare-backend` was CJS and couldn't `require()`
-the ESM-only package. Error: "Cannot find module."
-
-**Decided:** Add a dual build. ESM stays as `dist/`, CJS goes to `dist/cjs/`
-with a `{ "type": "commonjs" }` marker file written by a post-build script.
-
-**How:** Second `tsc` pass with `tsconfig.cjs.json` (`module: commonjs`,
-`moduleResolution: node10`, `ignoreDeprecations: "6.0"`). The `exports` map
-has per-format `import`/`require` conditions with their own `types` pointers.
-
-**Also fixed:** Named export was missing. Consumer code used
-`import { logger }` (named) which was `undefined` because only the default was
-exported. Added `export { logger }`.
-
----
-
-## 8. Timestamp format evolution
-
-**Started with:** ISO 8601 (`2026-05-30T10:00:00.000Z`).
-
-**Changed to:** Local time with AM/PM and timezone (`05/30/2026, 04:00:00 PM GMT+6`).
-
-**Problem:** MM/DD/YYYY is ambiguous, doesn't sort, and the year + timezone
-clutters every line.
-
-**Final decision:** `05-30 04:00:00 PM`. ISO date order (`MM-DD`), 12-hour
-time, no year, no timezone. Short, unambiguous, readable.
-
-**Why drop the year and timezone:** If you're looking at logs live you know what
-day it is. The timezone is always your own.
-
----
-
-## 9. Color system
-
-**Asked:** Add color-coded level tags.
-
-**Designed:** Raw ANSI escape codes, no `chalk`, no external package. Separate
-`colorize(text, color)` function for applying color, `isTTY(streamName)` for
-deciding whether to apply it. Kept separate so the decision and the action are
-decoupled.
-
-**Colors chosen:**
-
-- `[INFO]` cyan
-- `[WARN]` yellow
-- `[ERROR]` red
-- Timestamp + location: teal / dim teal
-- Branch glyphs: gray
-
-**Asked:** Add `teal` and `dimTeal` as named colors.
-
-**Done:** Added as 256-color ANSI codes (`38;5;30` and `38;5;23`).
-
-**Asked:** Color only the tag, not the full line.
-
-**Done:** Timestamp and location are separate arguments; `colorize` applies only
-to the tag and branch connector.
-
----
-
-## 10. Tree layout
-
-**Asked:** Output format should be like:
-
-```text
-[INFO] 2026-05-29T22:05:59 (server.ts:24)
-  Environment: development
+```
+frame 0  Error (inside getCaller)
+frame 1  getCaller
+frame 2  the user-facing function
+frame 3  the user's call site  ✓
 ```
 
-**Iterated through:** Various `\n` combinations, leading/trailing blank lines,
-`├──` / `└──` branch connectors.
+Any extra function frame between the user's call and `getCaller()` shifts the
+depth and points the location at the wrong file.
 
-**Problem hit:** The `console.log("")` added to create a blank line above each
-entry always wrote to `stdout`, even for `error`/`warn` which write to
-`stderr`. The timestamp and message landed on different streams. Broke tests.
+**Rule:** `getCaller()` is always called in the user-facing function and passed
+down as an argument to any shared helper. Never resolved inside a helper.
 
-**Fix:** Fold the blank line into the same `console[channel]` call as a leading
-`\n` argument.
+This is why `writeLog({ …, caller })` takes caller as an argument. Why
+`tapAsync(promise, label, caller)` takes caller as an argument. And why every
+feature function (`log`, `logError`, `logWarn`, `tap`, `group`) calls
+`getCaller()` as its first line before delegating anything.
 
-**Final layout:**
-
-```text
-[INFO]
-├── message here
-└── 05-30 04:00:00 PM - (server.ts:42)
-```
-
-**Observation:** `├──` in non-TTY (piped) output was showing as `└──` because
-the plain-mode fallback used the wrong constant. Fixed.
+Breaking this rule silently points every log line at the wrong file with no
+error to catch it.
 
 ---
 
-## 11. Clickable source links (F1)
+## 3. Clickable links — what doesn't work and why
 
-**Asked:** Implement the headline feature. `(server.ts:42)` should be a
-clickable link in the terminal.
+The terminal link format is OSC-8: `\x1b]8;;URL\x07text\x1b]8;;\x07`.
 
-**Technology:** OSC-8 hyperlinks (`\x1b]8;;URL\x07text\x1b]8;;\x07`). Pure
-terminal escape sequences, no dependencies.
+**`:line` in the URL does not work.** It was tried twice and reverted twice:
 
-**Problem hit:** First used `file:///path/to/file:42` (`:line` appended to the
-URL). This broke GNOME Terminal/`gio` — it tried to open a file literally named
-`server.ts:42`. Error dialog appeared.
+- First attempt: `file:///path/to/file:42`. GNOME Terminal / `gio` treated
+  `:42` as part of the filename and tried to open a file literally named
+  `server.ts:42`. Error dialog appeared.
+- Second attempt (v1.8.9): appended `:line` as an optional parameter to
+  `fileUrl()`. Released, then reverted. Line navigation either broke openers
+  that don't expect the suffix or didn't trigger the jump as intended.
 
-**Fix:** Use a valid `file://` URL (no `:line` suffix). The line number stays
-visible in the link's display text.
+**The line number stays in the display text only.** The URL is a plain
+`file://` path with no suffix. This is the correct and final format — do not
+attempt `:line` again.
 
-**VS Code deep-link attempt:** Tried `vscode://file/path:line:1` when
-`TERM_PROGRAM === "vscode"`. Implemented, then removed — it required reading an
-env var, which violated the zero-env rule.
-
-**Rule reinforced:** Only `NODE_ENV`. Terminal detection reads `isTTY` (a
-runtime signal set by the terminal, not the user). Any feature that requires
-the user to set an env var gets removed.
-
-**Regex fix:** The caller regex `\.[jt]sx?` missed `.mjs`/`.cjs`/`.mts`/`.cts`.
-Fixed to `\.[cm]?[jt]sx?`. Test confirmed `logger.test.mjs:42` now resolves.
+VS Code deep-linking via `vscode://file/path:line:1` when
+`TERM_PROGRAM === "vscode"` was also attempted. Removed — it required reading
+an env var, which violates rule 1.
 
 ---
 
-## 12. `logger.tap`: the headline feature
+## 4. `tap` — design decisions
 
-**Motivation:** Writing:
+**One `tap`, not two.** The first proposal was a sync `tap` + a separate public
+`tapAsync`. Rejected: the consumer shouldn't choose the path. One `tap` routes
+internally — sync values log immediately, Promises go through the async path.
 
-```ts
-const user = await getUser(id)
-console.log("user:", user)
-return user
-```
+**Response cloning.** `tap` on a fetch call resolves to a `Response`, not the
+data. To log the body, the body must be read — but reading it consumes it. The
+caller's `Response` must stay usable. Fix: `res.clone()` in the background,
+read the clone, leave the original untouched.
 
-Two lines every time. Wanted one.
+**Size calculation.** `Content-Length` is absent on compressed responses
+(most production APIs use Brotli or gzip). Relying on the header meant size
+never showed for real-world endpoints. Fix: `new TextEncoder().encode(text).length`
+on the body text already read from the clone. Always available,
+compression-independent.
 
-**API design discussion: should tap be sync only or handle promises?**
+**512 KB body limit.** Body reading is gated before cloning. Large responses
+show `"(body too large to display)"` instead of buffering the whole thing.
 
-First proposal: sync `tap` + separate `tapAsync`. Decided against splitting
-the public API. The consumer shouldn't choose. One `tap` that internally
-routes: sync value logs inline, promise uses the async path.
+**`isLogAllowed` in tapAsync.** Once `isLogAllowed` lived only in `writeLog`,
+a production leak appeared: `tapAsync` ran `isTTY()`, `performance.now()`,
+`clone()`, and `readBody()` before ever reaching `writeLog`. All that work
+fired uselessly in production. Fix: `isLogAllowed()` at the top of `tapAsync`
+before any expensive computation.
 
-**The critical constraint: caller location.**
-
-`getCaller()` reads a fixed stack depth. Any extra function frame between the
-user's call and `getCaller()` points the location at the wrong file. The rule:
-
-> `getCaller()` is always called in the user-facing function and **passed down**
-> to any shared helper. Never resolved inside the helper.
-
-So `writeLog({ …, caller })` takes the caller as an argument. `tapAsync` also
-takes the caller as an argument — resolved by `tap` before the async hop, so
-the location points at the user's code even across `await`.
-
-**Internal structure:**
-
-```text
-tap/
-  createTap.ts   the public `tap`; resolves caller; routes to tapAsync or sync writeLog
-  tapAsync.ts    the async path; timing, status, body, rejection logging
-```
-
-**Verified:** Location is correct from every call context: top-level, regular
-function, arrow, class method, static method, async/await, callback.
+Rule: for async paths that do expensive work before the write function, guard
+before the pre-work, not inside the write function.
 
 ---
 
-## 13. API response logging: `tap(fetch(...))`
+## 5. `logger.group` — four API rounds before landing
 
-**Realised:** `tap` on a fetch promise resolves to a `Response`, not the data.
-To show what actually came back, the body needs to be read.
+The API went through four rounds before settling.
 
-**Constraint:** The caller's `Response` must stay consumable. If `tap` reads
-the body, the consumer can't call `res.json()` anymore.
+**Round 1:** `logger.group("Server setup", item1, item2, ...)` — rest args.
+Rejected: the title isn't clearly separated from the items.
 
-**Solution:** `res.clone()` in the background. Read the clone, leave the
-original untouched. Verified: consumer got the real data after `tap`.
+**Round 2:** `logger.group({ title: "Server setup" }, ...items)` — opts object
+first. Built and shipped. Then removed: `isGroupOpts` detection was fragile.
+Any plain object accidentally matched. Simplified to `(title: string, ...items)`.
 
-**What gets logged:**
+**Round 3:** `logger.group("Server setup", ...items)` — plain string title.
+Clean, but raised the question of whether tap and group could share logic.
+Conclusion: group is for display consolidation, tap is for pass-through logging.
+Different purposes, they do not merge.
 
-```text
-response: {
-  status: 200 OK
-  time: 44ms
-  size: 509 B
-}
-data: { id: 1, name: 'Leanne Graham', … }
-```
-
-**Size problem:** `Content-Length` is absent on compressed responses
-(`Content-Encoding: br` or `gzip`, most production APIs). Relying on the
-header meant size never showed for real-world endpoints.
-
-**Fix:** Compute size from `new TextEncoder().encode(text).length` on the body
-text already read from the clone. Size is now always shown regardless of
-compression.
-
-**Rejection logging:** Initially nothing happened on rejected promises. Fixed to log
-`[TAP] label rejected after 42ms TypeError: fetch failed …` to `stderr`.
-
-**Large body protection:** Body reading gated at 512 KB (`Content-Length` check
-before cloning). Large responses show `"(body too large to display)"` instead
-of buffering the whole thing.
+**Round 4:** `logger.group({ name, type?, logs })` — the final form.
+`type` started as `GroupType = "info" | "warn" | "error"` with a `CHANNEL` map
+translating `"info"` to `"log"`. Removed immediately: `GroupType` was just
+`LogChannel` with one value renamed. The alias, the map, and the ternary were
+all deleted. `type` is `LogChannel` directly — `"log" | "warn" | "error"`.
 
 ---
 
-## 14. Folder restructure
+## 6. Architecture — layers and dependency rules
 
-**Asked:** Distinguish files by feature/type with separate folders.
-
-**Designed:**
+The source is organized into three layers with strict dependency rules:
 
 ```text
 src/
-  core/         createLog, writeLog (the pipeline)
-  tap/          createTap, tapAsync
-  colors/       colorize, Color type
-  decorations/  OSC-8 clickable links
-  caller/       getCaller (stack -> file:line)
-  time/         getTimeStamp
-  terminal/     isTTY (single source of truth)
-  constants.ts  all layout values in one place
+  types/     shared type definitions (LogChannel)
+  const/     zero-dependency constants (BRANCH, SEPARATOR …)
+  config/    zero-dependency isLogAllowed
+  domain/    shared infrastructure — no feature knowledge
+  features/  one folder per user-facing method
+  index.ts   imports only from features
 ```
 
-**DRY applied:** `supportsColor` and `supportsHyperlinks` were byte-for-byte
-identical. Both removed. One `terminal/isTTY.ts` serves both.
+**Rules:**
 
-**Constants centralised:** `TAG_COLOR`, `BRANCH`, `BRANCH_END`, `SEPARATOR`,
-`MESSAGE_INDENT`, `DEFAULT_MAX_LINES`, `LogChannel` all moved to
-`src/constants.ts`. No magic literals scattered across `writeLog.ts`.
+- `const/` and `config/` have zero imports from anywhere inside `src/`
+- `domain/` imports only from `const/`, `config/`, and `types/`
+- `features/` imports from `domain/` only — never from another feature
+- `src/index.ts` imports only from `features/`
 
-**Barrel removed:** `utils/index.ts` barrel was re-exporting symbols only
-`src/index.ts` used. Dropped it. `index.ts` now imports directly from each
-feature folder.
 
----
+**Why these rules matter:** breaking them silently couples things that should
+change independently. A feature importing from another feature means two features
+must be updated together. Domain importing from a feature means the shared
+infrastructure knows about specific product decisions.
 
-## 15. Security work
+**`isLogAllowed` ownership.** The guard lives in `writeLog` and `writeGroup` —
+the functions that talk to `console`. Features call the write functions
+unconditionally. The write layer decides whether to proceed.
 
-**Asked:** Make the package credible to security reviewers.
+**`createLog` does not belong in domain.** A factory that accepts `"log"` and
+`"[INFO]"` as parameters carries feature-specific knowledge, even if it doesn't
+hardcode the values. Each feature calls `writeLog` directly with its own channel
+and tag. No shared factory, no parameters to pass down.
 
-**`SECURITY.md` added** covering:
-
-- Zero runtime dependencies (no supply-chain surface).
-- No I/O, no network, no dynamic execution, nothing persisted.
-- Trust boundary: log arguments are output, not sanitized (same as `console.log`).
-- `tap` specifically: does not store, forward, or hijack tokens/sessions. Returns
-  the exact value by reference. The only "exposure" is text printed to your
-  terminal.
-- Private vulnerability reporting to `inbox.meadown@gmail.com`.
-
-**Audit findings resolved:**
-
-- Source maps (`22 .map` files) were shipping in the tarball. Removed by
-  setting `sourceMap: false` in `tsconfig.json`.
-- `MESSAGE_INDENT` was 3 spaces but `├──` is 4 columns wide. Off by one.
-  Fixed in `constants.ts`.
-- Plain-mode tree used `└──` for the message branch instead of `├──`. Fixed.
+**`TAG_COLOR` belongs in `domain/write`, not `const/`.** It imports `Color`
+from `domain/colors`. Putting it in `const/` created a `const→domain` dependency,
+breaking the layer rule. Moved to `domain/write/helpers/buildContext.ts`.
 
 ---
 
-## 16. Positioning decision
-
-**Original framing:** "Shuts up in production."
-
-**Problem with that framing:** It defines the package by what it doesn't do
-in production, which implicitly closes the door on a future production-grade
-logger. It also undersells the development experience, which is the real value.
-
-**New framing:** "Development-focused logger."
-
-The production handling is a consequence of being development-focused, not the
-identity. A production logger with transports, persistence, and log levels is a
-separate product. This one is for the part of your day when you're moving fast
-and need to know what your code is doing right now.
-
-**Changed everywhere:** README, MARKETING.md, `package.json` description.
-
----
-
-## 19. Second `:line` URL attempt — reverted again (v1.8.9)
-
-**Attempted:** Append `:line` to the `file://` URL so supporting terminals
-(VS Code, iTerm2, WezTerm) jump straight to the exact line, not just open the
-file.
-
-**Implementation:** `fileUrl(file, line?)` — optional second argument. When
-provided, returns `${base}:${line}`. `writeLog` passed `caller.line` through.
-Released as v1.8.9 (`fix(clickable-source-link): jump straight to the exact
-line in the file`).
-
-**What happened:** Line navigation failed again. The `:line` suffix either
-broke file openers that don't expect it or didn't trigger the jump as intended.
-
-**Decision:** Reverted. `fileUrl` is back to a single `file` argument. The
-line number stays visible only in the display text, not encoded in the URL.
-This is the same conclusion reached in entry 11 — the rule held.
-
-**Rule reconfirmed:** `file://` URLs must not have a `:line` suffix. File
-openers that don't understand it (GNOME/`gio`, others) treat it as a literal
-filename component. There is no safe universal format for deep-linking to a
-line via `file://`.
-
----
-
-## 20. `writeLog` folder split
-
-**Asked:** Split `src/core/writeLog.ts` into a folder.
-
-**Designed:**
-
-```text
-src/core/writeLog/
-  index.ts          writeLog() + re-exports getVisibleLines/setVisibleLines
-  visibleLines.ts   shared collapse state + get/set API
-  renderMessage.ts  collapse() (internal) + renderMessage()
-  formatLocation.ts formatLocation() — caller → OSC-8 link or plain label
-```
-
-**Why:** The file held four distinct responsibilities. Splitting makes each
-concern independently readable without introducing any new abstractions — the
-public API is identical.
-
-**Module resolution note:** `moduleResolution: node16` requires explicit `.js`
-extensions. Moving to a folder means `./writeLog.js` no longer resolves to
-`./writeLog/index.js`. All four consumers updated to `./writeLog/index.js`.
-
----
-
-## 17. Key rules that held throughout
-
-These came up repeatedly and shaped every decision:
-
-1. **Zero runtime dependencies.** Every feature implemented with Node built-ins.
-2. **`NODE_ENV` is the only consumer-facing env var.** No `FORCE_HYPERLINK`,
-   no `LOG_EDITOR`, no `DEBUG`. Features must work zero-config.
-3. **`getCaller()` is always called in the user-facing function.** Never inside
-   a helper. The resolved `Caller` is passed down.
-4. **Commit only when asked.** Never auto-commit, never push without explicit
-   instruction. Review before committing.
-5. **Remove rather than add.** Each iteration cut something: `customLogConfig`,
-   env var knobs, the `utils/` barrel, source maps, duplicate `isTTY`
-   functions, the `debug` feature.
-
----
-
-## 18. What was cut and why
+## 7. What was cut and why
 
 | Cut                                    | Reason                                             |
 | -------------------------------------- | -------------------------------------------------- |
@@ -453,9 +183,18 @@ These came up repeatedly and shaped every decision:
 | `isDebugAllowed` / `.debug()`          | Out of v1 scope                                    |
 | `FORCE_HYPERLINK` env var              | Violates zero-env rule                             |
 | `LOG_EDITOR` / `vscode://` deep link   | Violates zero-env rule                             |
-| Click-to-expand collapse               | Terminals can't do it, not a browser               |
+| Click-to-expand collapse               | Terminals can't do it                              |
 | Temp file for collapsed content        | Writes to disk, privacy risk, complexity           |
 | `supportsColor` / `supportsHyperlinks` | Duplicate of `isTTY`                               |
-| `utils/index.ts` barrel                | Only used by one file; removed for directness      |
+| `utils/index.ts` barrel                | Only used by one file                              |
 | Source maps in tarball                 | Point at unpublished `src/`; dead weight           |
 | `tapAsync` as a public API             | Consumer shouldn't choose; `tap` routes internally |
+| `GroupType` alias                      | Renamed `LogChannel` with no added meaning         |
+| `createLog` factory in domain          | Domain should not carry feature-specific params    |
+| `:line` in `file://` URLs              | Breaks file openers; tried twice, reverted twice   |
+
+---
+
+Architected and developed by [Dewan Mobashirul](https://linkedin.com/in/dewan-meadown)
+
+MIT © [meadown](https://github.com/meadown)
