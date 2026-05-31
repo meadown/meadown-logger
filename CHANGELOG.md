@@ -1,3 +1,9 @@
+## [1.8.8](https://github.com/meadown/meadown-logger/compare/v1.8.7...v1.8.8) (2026-05-31)
+
+### Documentation
+
+* refresh logger documentation ([f1fdc02](https://github.com/meadown/meadown-logger/commit/f1fdc02ea3f89472beb97cb5d0de279136660d9d))
+
 ## [1.8.7](https://github.com/meadown/meadown-logger/compare/v1.8.6...v1.8.7) (2026-05-31)
 
 ### Bug Fixes
