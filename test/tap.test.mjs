@@ -87,6 +87,18 @@ test("tap does not crash on a circular object", () => {
   assert.equal(returned, circular) // still returns it
 })
 
+test("tap on a void promise shows elapsed time only, not undefined", async () => {
+  const calls = await withEnv("development", () =>
+    captureAsync("log", async () => {
+      await logger.tap(Promise.resolve(undefined), "SET user:1")
+    }),
+  )
+  const line = calls[0].join(" ")
+  assert.ok(line.includes("[TAP]"))
+  assert.ok(line.includes("SET user:1"))
+  assert.ok(!line.includes("undefined"))
+})
+
 test("tap logs a POST API response sample", async () => {
   const body = { id: 3, name: "Charlie" }
   const payload = JSON.stringify(body)
