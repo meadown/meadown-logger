@@ -107,6 +107,28 @@ before any expensive computation.
 Rule: for async paths that do expensive work before the write function, guard
 before the pre-work, not inside the write function.
 
+**Function tap — one dispatcher, not a separate method.** Early sketches
+considered a public `logger.spy(fn, label)`. Rejected for the same reason
+`tapAsync` stayed internal: the consumer shouldn't have to pick the right
+method for the value they're holding. `tap` already branches on promise vs.
+plain value; branching on function is one more case in the same dispatcher.
+The wrapping itself lives in `logger-spy/createSpy.ts` — kept out of
+`createTap` so the dispatcher stays a dispatcher, not a grab-bag. (This is
+the one place a feature imports another feature — see Architecture →
+dependency rules.)
+
+**EventEmitter detection.** `logger.tap(emitter.on("error", handler), "...")`
+is an easy slip — `.on()` returns the emitter, not the handler, so the tap
+would log the emitter object once and never see an event fire. Rather than
+ship that silent confusion, `tap` duck-types EventEmitter (`on`/`emit`/
+`removeListener` all present and callable), logs a `[WARN]` that points at
+the fix, and returns the emitter unchanged so the caller's code keeps running.
+
+**Void promises log elapsed time only.** `client.set()`, `del()`, and similar
+resolve to `undefined`. Logging `"SET 2ms" undefined` is noise, not signal —
+`hasValue = resolved !== undefined` drops the value from the log args
+entirely when there's nothing worth showing.
+
 ---
 
 ## 5. `logger.group` — four API rounds before landing

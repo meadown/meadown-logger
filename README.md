@@ -203,7 +203,38 @@ server.listen(logger.tap(port, "port"))
 ```
 
 If it's a promise, timing is logged once it settles. If it resolves to a
-`Response`, you also get status and size.
+`Response`, you also get status and size. Void operations like `client.set()`
+or `del()` resolve to `undefined` — only the elapsed time is logged, the
+value is omitted.
+
+#### Tap a function
+
+Pass a function and get back a wrapper with the same signature. Every call
+logs its arguments first, then the original runs and its return value passes
+through untouched — useful for seeing what an event handler or callback
+actually receives.
+
+```ts
+client.on("error", logger.tap((err) => {
+  this.isConnected = false
+}, "Redis error:"))
+
+const adults = users.filter(logger.tap((u) => u.age >= 18, "filter"))
+```
+
+One easy mistake: tapping the return value of `.on()` instead of the handler.
+`.on()` returns the emitter, not the callback, so you'd just be logging the
+emitter object — not the event arguments you actually want to see. Tap detects
+this, logs a `[WARN]`, and returns the emitter unchanged so your code keeps
+working:
+
+```ts
+// ✗ taps the emitter — logs a [WARN], the emitter comes back unchanged
+logger.tap(emitter.on("error", handler), "error")
+
+// ✓ taps the callback — wrap the function, not the .on() call
+emitter.on("error", logger.tap(handler, "error"))
+```
 
 ### `logger.group()`
 

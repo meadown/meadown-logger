@@ -35,7 +35,9 @@ class MockRedisClient extends EventEmitter {
 
   async get(key: string): Promise<string | null> {
     await delay(12)
-    return key.endsWith("user:1") ? JSON.stringify({ id: 1, name: "Alice" }) : null
+    return key.endsWith("user:1")
+      ? JSON.stringify({ id: 1, name: "Alice" })
+      : null
   }
 
   async set(key: string, value: string): Promise<void> {
@@ -65,16 +67,18 @@ function delay(ms: number) {
 const client = new MockRedisClient()
 
 // 1. logger() — plain lifecycle messages
-client.on("connect",      () => logger("Connecting to Redis server..."))
-client.on("ready",        () => logger("Redis client ready"))
-client.on("end",          () => logger("Connection closed"))
+client.on("connect", () => logger("Connecting to Redis server..."))
+client.on("ready", () => logger("Redis client ready"))
+client.on("end", () => logger("Connection closed"))
 client.on("reconnecting", () => logger("Reconnecting to Redis..."))
 
 // 2. logger.tap(fn, label) — wrap the error callback so each firing is logged.
 //    The wrapper is transparent: same signature, same return value, same call.
 client.on(
   "error",
-  logger.tap((err: Error) => { /* handle: update isConnected = false, etc. */ }, "Redis error:"),
+  logger.tap((err: Error) => {
+    /* handle: update isConnected = false, etc. */
+  }, "Redis error:"),
 )
 
 // ---------------------------------------------------------------------------
