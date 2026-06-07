@@ -56,6 +56,7 @@
     "demo": "pnpm build && node --experimental-strip-types examples/ts/demo.ts",
     "demo:calls": "pnpm build && node --experimental-strip-types examples/ts/call-sites.ts",
     "demo:api": "pnpm build && node --experimental-strip-types examples/ts/api.ts",
+    "demo:redis": "pnpm build && node --experimental-strip-types examples/ts/redis-cache.ts",
     "demo-mjs": "pnpm build && node examples/mjs/demo.mjs",
     "demo:calls-mjs": "pnpm build && node examples/mjs/call-sites.mjs",
     "demo:api-mjs": "pnpm build && node examples/mjs/api.mjs",
