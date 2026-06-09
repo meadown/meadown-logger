@@ -13,6 +13,7 @@ src/
   config/      isLogAllowed — the production guard
   domain/      shared infrastructure, knows nothing about features
     caller/    getCaller — resolves file:line from the call stack
+               stripBundlerUrl — strips webpack / Turbopack synthetic URLs before display
     colors/    colorize, Color type
     decorations/ OSC-8 clickable terminal links
     terminal/  isTTY — single source of truth for TTY detection
@@ -22,7 +23,9 @@ src/
     logger/          [INFO] log function
     logger-error/    [ERROR] log function
     logger-warn/     [WARN] log function
-    logger-tap/      pass-through logger — sync and async paths
+    logger-tap/      pass-through logger — value, promise, and function paths
+    logger-spy/      internal — wraps a function and logs each call's args;
+                     not on the public API, used only by logger-tap
     logger-group/    grouped multi-item output block
     logger-max-lines/ collapse control — getVisibleLines / setVisibleLines
   index.ts     wires features into the public logger object
@@ -49,6 +52,13 @@ If domain needs something from a feature, the abstraction is in the wrong place.
 
 These aren't preferences — breaking them silently couples things that must
 change independently.
+
+**The `logger-spy` exception.** `logger-tap` imports `wrapFn` from
+`logger-spy` — the one place a feature reaches into another. `logger-spy`
+isn't a user-facing method (it's not wired onto the logger object); it exists
+only to give the function branch of `tap` its own file instead of bloating
+`createTap`. Treat it as an extension of `logger-tap`, not a peer feature —
+it must never be imported from anywhere else.
 
 ---
 

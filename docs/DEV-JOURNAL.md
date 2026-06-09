@@ -107,6 +107,28 @@ before any expensive computation.
 Rule: for async paths that do expensive work before the write function, guard
 before the pre-work, not inside the write function.
 
+**Function tap — one dispatcher, not a separate method.** Early sketches
+considered a public `logger.spy(fn, label)`. Rejected for the same reason
+`tapAsync` stayed internal: the consumer shouldn't have to pick the right
+method for the value they're holding. `tap` already branches on promise vs.
+plain value; branching on function is one more case in the same dispatcher.
+The wrapping itself lives in `logger-spy/createSpy.ts` — kept out of
+`createTap` so the dispatcher stays a dispatcher, not a grab-bag. (This is
+the one place a feature imports another feature — see Architecture →
+dependency rules.)
+
+**EventEmitter detection.** `logger.tap(emitter.on("error", handler), "...")`
+is an easy slip — `.on()` returns the emitter, not the handler, so the tap
+would log the emitter object once and never see an event fire. Rather than
+ship that silent confusion, `tap` duck-types EventEmitter (`on`/`emit`/
+`removeListener` all present and callable), logs a `[WARN]` that points at
+the fix, and returns the emitter unchanged so the caller's code keeps running.
+
+**Void promises log elapsed time only.** `client.set()`, `del()`, and similar
+resolve to `undefined`. Logging `"SET 2ms" undefined` is noise, not signal —
+`hasValue = resolved !== undefined` drops the value from the log args
+entirely when there's nothing worth showing.
+
 ---
 
 ## 5. `logger.group` — four API rounds before landing
@@ -175,7 +197,45 @@ breaking the layer rule. Moved to `domain/write/helpers/buildContext.ts`.
 
 ---
 
-## 7. What was cut and why
+## 7. Bundler URL stripping — keeping `file:line` honest in frameworks
+
+When the logger is used inside a bundler-compiled environment (Next.js, Angular
+CLI, Vue CLI, Turbopack), Node.js stack frames contain synthetic URLs that the
+bundler injects — not the real source paths. Before this fix, the `(file:line)`
+label in log output showed these raw bundler strings: `webpack-internal:///(rsc)/./src/app/page.tsx:42:5`.
+
+**The fix:** `getCaller` delegates path recognition to a separate module,
+`stripBundlerUrl`. It detects known bundler schemes, extracts the clean
+relative path (e.g. `src/app/page.tsx`), and sets `file: null` so no broken
+OSC-8 hyperlink is emitted — the label still shows `page.tsx:42` correctly.
+Completely synthetic frames (e.g. `[turbopack-node]/dev/noop.ts`) return
+`"unknown"` so they never leak a meaningless label.
+
+**Separation of concerns.** The stripping logic sits in its own file rather
+than inside `getCaller`. `getCaller` is stable stack-frame parsing. The
+bundler patterns are volatile configuration — new frameworks, new schemes. The
+rule: add a branch to `stripBundlerUrl.ts`; never touch `getCaller.ts` for it.
+
+**Covered environments:**
+
+| Scheme | Produced by |
+| --- | --- |
+| `webpack-internal:///[qualifier/]./…` | webpack, Next.js (webpack mode), Angular CLI, Vue CLI |
+| `[project]/…` | Turbopack (Next.js `--turbo`) |
+| `[anything-else]/…` | filtered as bundler-internal, shown as `unknown` |
+
+Vite SSR and plain Node.js emit real `file://` paths — no stripping needed,
+they flow through unchanged.
+
+**`file: null` instead of a resolved absolute path.** The relative path inside
+a bundler URL (`src/app/page.tsx`) has no recoverable absolute location — the
+project root isn't available to the logger. Setting `file: null` disables the
+OSC-8 link for these frames rather than pointing at a wrong path. The label
+still shows the useful `basename:line` form.
+
+---
+
+## 8. What was cut and why
 
 | Cut                                    | Reason                                             |
 | -------------------------------------- | -------------------------------------------------- |

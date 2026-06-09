@@ -31,7 +31,7 @@ tells you where things came from and disappears when you ship.
 - **Zero dependencies**
 - **Development-focused** — built for the dev experience, not production ops
 - **Clickable source link** — every log jumps straight to the file and line it came from
-- **Tap logging** — log any value or promise inline without breaking the expression
+- **Tap logging** — log any value, promise, or function inline without breaking the expression
 - **Color-coded levels** — `[INFO]` cyan, `[WARN]` yellow, `[ERROR]` red
 - **Tree layout** — clean, scannable structure in your terminal
 - **Collapsible output** — cap long dumps with `logger.maxLines`
@@ -105,7 +105,8 @@ export const logger = (...args) => log(...args)
 ├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
 │ logger.error()  │ [ERROR]     │ ...args: unknown[]       │ something broke           │
 ├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
-│ logger.tap()    │ [TAP]       │ value: T, label?: string │ log value, returns as-is  │
+│ logger.tap()    │ [TAP]       │ value, label?: string    │ log value/promise/fn;     │
+│                 │             │                          │ returns as-is             │
 ├─────────────────┼─────────────┼──────────────────────────┼───────────────────────────┤
 │ logger.group()  │ [name]      │ { name: string,          │ consolidate related       │
 │                 │             │   type?: LogChannel,     │ items under a label       │
@@ -139,23 +140,65 @@ logger("user logged in", { userId: 42, role: "admin" })
 
 The one you reach for when you want to see what's inside something without
 stopping to assign it to a variable first. Logs it and gives it straight back.
+Works on any value, any promise, and any function — `tap` detects what you
+pass and handles it accordingly.
+
+#### Sync values
+
+Numbers, strings, objects, anything. Logged immediately and returned as-is.
+Drop it directly into an expression — no extra variable needed.
 
 ```ts
-const port = logger.tap(5000, "port")
 server.listen(logger.tap(port, "port"))
+logger.tap(config, "loaded config")
+```
+
+```text
+[TAP]
+├── port 5000
+└── 05-30 04:00:00 PM - (server.ts:3)
+
+[TAP]
+├── loaded config { host: 'localhost', port: 5432, db: 'app' }
+└── 05-30 04:00:00 PM - (server.ts:4)
+```
+
+#### Promises
+
+The same promise comes back immediately — your `await` and your code are
+completely unchanged. Once it settles, timing and the resolved value are logged
+in the background.
+
+```ts
+const user = await logger.tap(getUser(1), "getUser")
+```
+
+```text
+[TAP]
+├── getUser 12ms { id: 1, name: 'Alice', role: 'admin' }
+└── 05-30 04:00:00 PM - (server.ts:10)
+```
+
+Void operations like `client.set()` or `del()` resolve to `undefined` — tap
+logs elapsed time only and omits the value:
+
+```ts
+await logger.tap(cache.set(key, value), "SET")
+```
+
+```text
+[TAP]
+├── SET 2ms
+└── 05-30 04:00:00 PM - (cache.ts:8)
 ```
 
 #### API response logging
 
-Drop it into any `await` and you get timing, status, size, and the response
+Drop it into any `fetch` and you get timing, status, size, and the response
 body — without touching your code at all.
 
 ```ts
-const user = await logger.tap(
-  fetch("https://api.example.com/users/1"),
-  "GET /users/1",
-)
-// user is the real Response — your code doesn't change at all
+const res = await logger.tap(fetch("https://api.example.com/users/1"), "GET /users/1")
 ```
 
 ```text
@@ -180,30 +223,55 @@ opening DevTools.
 
 ![API response logging: tap a fetch and see timing, status, size, and body](media/tap-api-demo.png)
 
-#### Tap any value
+#### Functions
 
-Not just fetch. Any value, any expression. Logged and returned as-is.
-
-```ts
-// numbers, strings, objects — logged and returned as-is
-logger.tap(port, "port")
-logger.tap(process.env.NODE_ENV, "env")
-logger.tap(config, "loaded config")
-```
+Pass a function and get back a wrapper with the same signature. Every time it
+is called, its arguments are logged first, then the original runs and its
+return value passes through untouched. Useful for seeing exactly what a
+callback or event handler actually receives.
 
 ```ts
-// promises — flows through, timing logged when it settles
-const user = await logger.tap(getUser(), "getUser")
-const config = await logger.tap(loadConfig(), "loadConfig")
+client.on("error", logger.tap((err) => {
+  this.isConnected = false
+}, "Redis error:"))
 ```
+
+```text
+[TAP]
+├── Redis error: Error: connect ECONNREFUSED 127.0.0.1:6379
+└── 05-30 04:00:00 PM - (client.ts:8)
+```
+
+Works great with array methods too. Wrap the callback and you can see exactly
+what each item looks like as it goes through. One log per call, nothing breaks:
 
 ```ts
-// inline — no temp variable needed
-server.listen(logger.tap(port, "port"))
+const adults = users.filter(logger.tap((u) => u.age >= 18, "filter"))
 ```
 
-If it's a promise, timing is logged once it settles. If it resolves to a
-`Response`, you also get status and size.
+```text
+[TAP]
+├── filter { id: 1, name: 'Alice', age: 25 }
+└── 05-30 04:00:00 PM - (users.ts:14)
+
+[TAP]
+├── filter { id: 2, name: 'Bob', age: 16 }
+└── 05-30 04:00:00 PM - (users.ts:14)
+```
+
+`One easy mistake:` tapping the return value of `.on()` instead of the handler.
+`.on()` returns the emitter, not the callback, so you'd be logging the emitter
+object once and never see an event fire. Tap detects this, logs a `[WARN]`
+pointing at the fix, and returns the emitter unchanged so your code keeps
+running:
+
+```ts
+// ✗ taps the emitter — logs a [WARN], the emitter comes back unchanged
+logger.tap(emitter.on("error", handler), "error")
+
+// ✓ taps the callback — wrap the function, not the .on() call
+emitter.on("error", logger.tap(handler, "error"))
+```
 
 ### `logger.group()`
 
@@ -287,6 +355,24 @@ with a count of what's hidden. Set back to `0` to show everything again.
 logger.maxLines = 5 // show 5 lines, then "... N more lines"
 logger.maxLines = 0 // default — show everything
 ```
+
+## Framework compatibility
+
+The `(file:line)` location in every log line always shows your source file —
+not a build artifact URL. When your code runs inside a bundler, stack frames
+can contain synthetic paths that have nothing to do with where you wrote the
+code. The logger strips these automatically:
+
+| Environment | Stack frame format | What you see |
+| --- | --- | --- |
+| Next.js (webpack) | `webpack-internal:///(rsc)/./src/app/page.tsx` | `page.tsx:42` |
+| Angular CLI / Vue CLI | `webpack-internal:///./src/...` | `page.tsx:42` |
+| Next.js (Turbopack) | `[project]/src/app/page.tsx` | `page.tsx:42` |
+| Vite SSR / plain Node.js | real `file://` path | `page.tsx:42` |
+
+No config needed — the logger detects the format from the stack frame and
+handles it. Bundler-internal frames (e.g. Turbopack's own runtime files) are
+filtered out and shown as `unknown` rather than leaking a meaningless path.
 
 ## Production
 

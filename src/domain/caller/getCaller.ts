@@ -5,6 +5,8 @@
  * All rights reserved
  */
 
+import { stripBundlerUrl } from "./stripBundlerUrl.js"
+
 /** A resolved call site. `file`/`line` are `null` when they can't be determined. */
 export interface Caller {
   /** Short display location, e.g. `server.ts:42`, or `"unknown"`. */
@@ -41,10 +43,19 @@ export default function getCaller(): Caller {
   // path intact (e.g. Windows `C:\…` or `file://…`).
   const match = inner.match(/^(.*):(\d+):\d+$/)
   if (match === null) return UNKNOWN
-  const file = match[1] ?? ""
+  const rawFile = match[1] ?? ""
   const line = Number(match[2])
-  const base = file.split(/[/\\]/).pop() ?? ""
+
+  const bundler = stripBundlerUrl(rawFile)
+  if (bundler === "unknown") return UNKNOWN
+  if (bundler !== null) {
+    const base = bundler.display.split(/[/\\]/).pop() ?? ""
+    if (!SOURCE_FILE.test(base)) return UNKNOWN
+    return { label: `${base}:${line}`, file: null, line }
+  }
+
+  const base = rawFile.split(/[/\\]/).pop() ?? ""
   if (!SOURCE_FILE.test(base)) return UNKNOWN
 
-  return { label: `${base}:${line}`, file, line }
+  return { label: `${base}:${line}`, file: rawFile, line }
 }

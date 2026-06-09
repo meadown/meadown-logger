@@ -24,24 +24,50 @@ export interface Logger {
   /** Log at warn level — `stderr`, yellow `[WARN]` tag. */
   warn(...args: unknown[]): void
   /**
-   * Logs `value` with an optional `label` and gives it straight back unchanged
-   * — so you can drop it into any expression without adding an extra line.
+   * Logs `value` and returns it unchanged — drop it into any expression
+   * without adding an extra variable or line.
+   *
+   * Tap detects what you pass and handles it accordingly:
    *
    * **Sync value** — logged immediately, returned as-is:
    * ```ts
-   * const port = logger.tap(3000, "port")       // logs it, port is still 3000
-   * const user = logger.tap(getUser(), "user")  // logs the user object, returns it
+   * const port = logger.tap(3000, "port")
+   * const user = logger.tap(getUser(), "user")
    * ```
    *
-   * **Promise** — the same promise comes back; timing and HTTP status are logged
-   * in the background once it settles, without blocking your code:
+   * **Promise** — returned immediately; once it settles, timing and the
+   * resolved value are logged in the background. Void promises log elapsed
+   * time only:
    * ```ts
-   * const res  = await logger.tap(fetch(url), "GET /users")  // logs status + ms
-   * const data = await logger.tap(loadConfig(), "config")    // logs value + ms
+   * const res  = await logger.tap(fetch(url), "GET /users")  // status + ms
+   * const data = await logger.tap(loadConfig(), "config")    // value + ms
+   * await logger.tap(client.set(key, val), "SET")            // ms only
    * ```
    *
-   * @param value  Any value or promise — always returned as-is.
-   * @param label  Optional label shown next to the value in the log line.
+   * **Function** — returns a wrapper with the same signature. Every time it
+   * is called, its arguments are logged, then the original runs and its
+   * return value is passed through:
+   * ```ts
+   * client.on("error", logger.tap((err) => {
+   *   this.isConnected = false
+   * }, "Redis error:"))
+   *
+   * const adults = users.filter(logger.tap((u) => u.age >= 18, "filter"))
+   * ```
+   *
+   * **Invalid — EventEmitter** — passing the return value of `.on()` is a
+   * common mistake. `.on()` returns the emitter itself, not the callback.
+   * Tap detects this and logs a warning pointing you to the correct usage:
+   * ```ts
+   * // ✗ taps the emitter — logs a [WARN] and returns the emitter unchanged
+   * logger.tap(emitter.on("error", handler), "error")
+   *
+   * // ✓ taps the callback — wrap the function, not the .on() call
+   * emitter.on("error", logger.tap(handler, "error"))
+   * ```
+   *
+   * @param value  Any value, promise, or function — returned as-is.
+   * @param label  Optional label shown before the value in the log line.
    */
   tap: Tap
   /**

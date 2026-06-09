@@ -12,10 +12,10 @@ import {
   readBody,
   buildBlock,
 } from "./helpers/index.js"
+import { isLogAllowed } from "../../../config/index.js"
 import { isTTY } from "../../../domain/terminal/isTTY.js"
 import { writeLog } from "../../../domain/write/index.js"
 import { type Caller } from "../../../domain/caller/getCaller.js"
-import { isLogAllowed } from "../../../config/index.js"
 
 /**
  * The async tap. Fire-and-forget: returns `promise` immediately (unchanged),
@@ -96,14 +96,20 @@ export function tapAsync(
       }
 
       // Non-Response promise — plain value with elapsed time.
+      // Void operations (set, del, …) resolve to undefined — omit the value.
       const elapsed = formatDuration(ms, useColor)
+      const hasValue = resolved !== undefined
       writeLog({
         channel: "log",
         tag: "[TAP]",
         args:
           label === undefined
-            ? [elapsed, resolved]
-            : [`${label} ${elapsed}`, resolved],
+            ? hasValue
+              ? [elapsed, resolved]
+              : [elapsed]
+            : hasValue
+              ? [`${label} ${elapsed}`, resolved]
+              : [`${label} ${elapsed}`],
         caller,
       })
     },
