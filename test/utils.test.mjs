@@ -8,6 +8,7 @@ import assert from "node:assert/strict"
 
 import getTimeStamp from "../dist/domain/time/getTimeStamp.js"
 import getCaller from "../dist/domain/caller/getCaller.js"
+import { stripBundlerUrl } from "../dist/domain/caller/stripBundlerUrl.js"
 import { fileUrl, hyperlink } from "../dist/domain/decorations/link.js"
 import { colorize } from "../dist/domain/colors/color.js"
 import { isTTY } from "../dist/domain/terminal/isTTY.js"
@@ -35,6 +36,41 @@ test("getCaller returns a structured caller", () => {
     assert.equal(typeof caller.file, "string")
     assert.equal(typeof caller.line, "number")
   }
+})
+
+test("stripBundlerUrl strips webpack-internal URLs (Next.js, Angular, Vue CLI)", () => {
+  // plain webpack
+  assert.deepEqual(
+    stripBundlerUrl("webpack-internal:///./src/app/page.tsx"),
+    { display: "src/app/page.tsx", file: null },
+  )
+  // Next.js RSC qualifier
+  assert.deepEqual(
+    stripBundlerUrl("webpack-internal:///(rsc)/./src/app/page.tsx"),
+    { display: "src/app/page.tsx", file: null },
+  )
+  // action-browser qualifier
+  assert.deepEqual(
+    stripBundlerUrl("webpack-internal:///(action-browser)/./src/app/actions.ts"),
+    { display: "src/app/actions.ts", file: null },
+  )
+})
+
+test("stripBundlerUrl strips Turbopack [project]/ URLs", () => {
+  assert.deepEqual(
+    stripBundlerUrl("[project]/src/app/page.tsx"),
+    { display: "src/app/page.tsx", file: null },
+  )
+})
+
+test("stripBundlerUrl returns 'unknown' for other bracket schemes", () => {
+  assert.equal(stripBundlerUrl("[turbopack-node]/dev/noop.ts"), "unknown")
+  assert.equal(stripBundlerUrl("[externals]/lodash/index.js"), "unknown")
+})
+
+test("stripBundlerUrl returns null for plain file paths", () => {
+  assert.equal(stripBundlerUrl("/home/user/project/src/server.ts"), null)
+  assert.equal(stripBundlerUrl("file:///home/user/project/src/server.ts"), null)
 })
 
 test("hyperlink wraps text in an OSC-8 escape sequence", () => {
