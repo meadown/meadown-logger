@@ -1,3 +1,9 @@
+## [1.9.1](https://github.com/meadown/meadown-logger/compare/v1.9.0...v1.9.1) (2026-06-07)
+
+### Bug Fixes
+
+* code generation for chunk item errored removing import of performance from node:perf_hooks ([ed5cf25](https://github.com/meadown/meadown-logger/commit/ed5cf25d6e83b63c4d8f514a5f58ae8c2d139138))
+
 ## [1.9.0](https://github.com/meadown/meadown-logger/compare/v1.8.11...v1.9.0) (2026-05-31)
 
 ### Features

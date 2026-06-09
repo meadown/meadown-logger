@@ -5,8 +5,6 @@
  * All rights reserved
  */
 
-import { performance } from "node:perf_hooks"
-
 import {
   formatDuration,
   formatBytes,
@@ -33,6 +31,9 @@ export function tapAsync(
 ): void {
   if (!isLogAllowed()) return
   const useColor = isTTY("stdout")
+  // Global `performance` (not `node:perf_hooks`) — Node >= 16 and browsers both
+  // expose it, and bundlers that pull this file into a client chunk can't
+  // externalize `node:perf_hooks`.
   const start = performance.now()
   void promise.then(
     (resolved) => {
