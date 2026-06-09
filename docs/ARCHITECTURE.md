@@ -13,6 +13,7 @@ src/
   config/      isLogAllowed — the production guard
   domain/      shared infrastructure, knows nothing about features
     caller/    getCaller — resolves file:line from the call stack
+               stripBundlerUrl — strips webpack / Turbopack synthetic URLs before display
     colors/    colorize, Color type
     decorations/ OSC-8 clickable terminal links
     terminal/  isTTY — single source of truth for TTY detection
