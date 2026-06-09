@@ -356,24 +356,6 @@ logger.maxLines = 5 // show 5 lines, then "... N more lines"
 logger.maxLines = 0 // default — show everything
 ```
 
-## Framework compatibility
-
-The `(file:line)` location in every log line always shows your source file —
-not a build artifact URL. When your code runs inside a bundler, stack frames
-can contain synthetic paths that have nothing to do with where you wrote the
-code. The logger strips these automatically:
-
-| Environment | Stack frame format | What you see |
-| --- | --- | --- |
-| Next.js (webpack) | `webpack-internal:///(rsc)/./src/app/page.tsx` | `page.tsx:42` |
-| Angular CLI / Vue CLI | `webpack-internal:///./src/...` | `page.tsx:42` |
-| Next.js (Turbopack) | `[project]/src/app/page.tsx` | `page.tsx:42` |
-| Vite SSR / plain Node.js | real `file://` path | `page.tsx:42` |
-
-No config needed — the logger detects the format from the stack frame and
-handles it. Bundler-internal frames (e.g. Turbopack's own runtime files) are
-filtered out and shown as `unknown` rather than leaking a meaningless path.
-
 ## Production
 
 Set `NODE_ENV=production` and everything goes silent. No wrapper calls, no

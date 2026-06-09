@@ -199,39 +199,47 @@ breaking the layer rule. Moved to `domain/write/helpers/buildContext.ts`.
 
 ## 7. Bundler URL stripping — keeping `file:line` honest in frameworks
 
-When the logger is used inside a bundler-compiled environment (Next.js, Angular
-CLI, Vue CLI, Turbopack), Node.js stack frames contain synthetic URLs that the
-bundler injects — not the real source paths. Before this fix, the `(file:line)`
-label in log output showed these raw bundler strings: `webpack-internal:///(rsc)/./src/app/page.tsx:42:5`.
+When the logger runs inside a webpack-compiled environment, Node.js stack
+frames contain synthetic `webpack-internal:///` URLs instead of real source
+paths. Before this fix the `(file:line)` label showed the raw bundler string
+— e.g. `webpack-internal:///(rsc)/./src/app/page.tsx:42:5`. The fix strips
+that prefix and shows `page.tsx:42` instead.
 
-**The fix:** `getCaller` delegates path recognition to a separate module,
-`stripBundlerUrl`. It detects known bundler schemes, extracts the clean
-relative path (e.g. `src/app/page.tsx`), and sets `file: null` so no broken
-OSC-8 hyperlink is emitted — the label still shows `page.tsx:42` correctly.
-Completely synthetic frames (e.g. `[turbopack-node]/dev/noop.ts`) return
-`"unknown"` so they never leak a meaningless label.
+**The fix:** `getCaller` delegates path recognition to `stripBundlerUrl`. It
+detects known bundler schemes, extracts the clean relative path, and sets
+`file: null` so no broken OSC-8 hyperlink is emitted. Any frame starting with
+`[` that isn't a known scheme returns `"unknown"` so it never leaks a
+meaningless label.
 
 **Separation of concerns.** The stripping logic sits in its own file rather
 than inside `getCaller`. `getCaller` is stable stack-frame parsing. The
-bundler patterns are volatile configuration — new frameworks, new schemes. The
-rule: add a branch to `stripBundlerUrl.ts`; never touch `getCaller.ts` for it.
+bundler patterns are volatile — new frameworks, new schemes. The rule: add a
+branch to `stripBundlerUrl.ts`; never touch `getCaller.ts` for it.
 
-**Covered environments:**
+**What's been verified:**
 
-| Scheme | Produced by |
-| --- | --- |
-| `webpack-internal:///[qualifier/]./…` | webpack, Next.js (webpack mode), Angular CLI, Vue CLI |
-| `[project]/…` | Turbopack (Next.js `--turbo`) |
-| `[anything-else]/…` | filtered as bundler-internal, shown as `unknown` |
+| Scheme | Produced by | Result |
+| --- | --- | --- |
+| `webpack-internal:///[qualifier/]./…` | Next.js (webpack mode) | `page.tsx:42` |
+| `[anything-else]/…` | Turbopack chunks, bundler internals | `unknown` |
 
-Vite SSR and plain Node.js emit real `file://` paths — no stripping needed,
-they flow through unchanged.
+**Turbopack limitation.** Real-world testing on Next.js 16 with `--turbopack`
+shows all server frames compiled into a single chunk file
+(`[root-of-the-server]__<hash>.js`). The `[project]/src/…` Turbopack path
+pattern handled in `stripBundlerUrl` exists for cases where Turbopack exposes
+source-relative paths, but in practice the compiled chunk path dominates and
+the logger shows `unknown`. Getting real file names requires Node.js to apply
+Turbopack's source maps to stack traces — `NODE_OPTIONS='--enable-source-maps'`
+— but Turbopack keeps its source maps in memory and does not expose them to
+Node.js's source map mechanism. No workaround exists within the logger.
+
+Angular CLI, Vue CLI, Vite SSR, and plain Node.js are handled in
+`stripBundlerUrl` but have not been verified in real projects yet.
 
 **`file: null` instead of a resolved absolute path.** The relative path inside
-a bundler URL (`src/app/page.tsx`) has no recoverable absolute location — the
-project root isn't available to the logger. Setting `file: null` disables the
-OSC-8 link for these frames rather than pointing at a wrong path. The label
-still shows the useful `basename:line` form.
+a bundler URL has no recoverable absolute location — the project root isn't
+available to the logger. Setting `file: null` disables the OSC-8 link for
+these frames rather than pointing at a wrong path.
 
 ---
 
