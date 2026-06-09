@@ -1,3 +1,16 @@
+## [1.10.0](https://github.com/meadown/meadown-logger/compare/v1.9.1...v1.10.0) (2026-06-09)
+
+### Features
+
+* **caller:** integrate bundler URL stripping in getCaller function ([f5d32fb](https://github.com/meadown/meadown-logger/commit/f5d32fbed3b8dc284fae7050a132afcae7784890))
+* **tap:** wrap function callbacks ([c8799d4](https://github.com/meadown/meadown-logger/commit/c8799d401dbd616410e2e780d1acf83660efb6e7))
+
+### Documentation
+
+* enhance README and DEV-JOURNAL with logger.tap details and usage examples ([8ae4cde](https://github.com/meadown/meadown-logger/commit/8ae4cde4258605144992d9aa53673be5f321db98))
+* **examples:** add redis cache demo ([0819c05](https://github.com/meadown/meadown-logger/commit/0819c0550937bde2dd78f3a5376421f165fb48f3))
+* update README and architecture to clarify tap logging and bundler URL stripping ([2519a93](https://github.com/meadown/meadown-logger/commit/2519a9312976d60130dabe1758d9cc9033791885))
+
 ## [1.9.1](https://github.com/meadown/meadown-logger/compare/v1.9.0...v1.9.1) (2026-06-07)
 
 ### Bug Fixes
